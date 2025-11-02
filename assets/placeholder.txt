@@ -1,0 +1,10 @@
+Replace these files with your own images:
+- car-hero.jpg
+- model-a.jpg
+- model-b.jpg
+- model-c.jpg
+
+You can download free placeholder images from https://picsum.photos or https://placehold.co
+
+Example usage (direct URL replacement in HTML):
+https://picsum.photos/seed/lec/800/450

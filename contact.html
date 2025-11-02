@@ -1,0 +1,104 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Contact - LeapReplica</title>
+  <link rel="stylesheet" href="css/style.css" />
+</head>
+<body>
+  <header class="site-header">
+    <div class="container header-inner">
+      <a href="index.html" class="brand">LeapReplica</a>
+      <nav class="site-nav">
+        <a href="index.html">Home</a>
+        <a href="products.html">Products</a>
+        <a href="about.html">About</a>
+        <a href="contact.html">Contact</a>
+      </nav>
+      <button class="nav-toggle" aria-label="Toggle navigation">☰</button>
+    </div>
+  </header>
+
+  <main>
+    <section class="container">
+      <h1>Contact Us</h1>
+      <p>For demo purposes, this is a placeholder contact page. Add your contact form or integration here.</p>
+      <form class="contact-form">
+        <label>Name<br><input type="text" name="name"></label>
+        <label>Email<br><input type="email" name="email"></label>
+        <label>Message<br><textarea name="message"></textarea></label>
+        <p><button class="btn" type="submit">Send</button></p>
+      </form>
+    </section>
+  </main>
+
+  <footer class="site-footer">
+    <div class="container">© 2025 LeapReplica</div>
+  </footer>
+
+  <script src="js/main.js"></script>
+  <script type='text/javascript'>
+	function initEmbeddedMessaging() {
+		try {
+			embeddedservice_bootstrap.settings.language = 'en_US'; // For example, enter 'en' or 'en-US'
+			window.addEventListener("onEmbeddedMessagingReady", () => {
+				const currentUrl = window.location.href;
+				console.log(currentUrl); // Example: https://www.example.com/path/to/page?param1=value1#section
+				const urlArray = currentUrl.split("/")
+				console.log(" Url Country", urlArray[3]);
+				const languageData = [
+  										['uk', 'English'],
+  										['it', 'Italian'],
+  										['de', 'German'],
+										['fr', 'French'],
+										['cz', 'Czech'],
+										['ie', 'English'],
+										['hu', 'Magyar'],
+										['gr', 'Greek'],
+										['hr', 'Croatian'],
+										['bg','Bulgarian'],
+										['nl', 'Nederland'],
+										['pt', 'Português']
+									];
+				const languageMap = new Map(languageData);
+				const countryData = [
+  										['uk', 'United Kingdom'],
+  										['it', 'Italy'],
+  										['de', 'Germany'],
+										['fr', 'France'],
+										['cz', 'Czech Republic'],
+										['ie', 'Ireland'],
+										['hu', 'Hungary'],
+										['gr', 'Greece'],
+										['hr', 'Croatia'],
+										['bg', 'Bulgaria'],
+										['nl', 'Nederland'],
+										['pt', 'Portugal']
+									];
+				const countryMap = new Map(countryData);
+				const ct = countryMap.get(urlArray[3]);
+				const lg = languageMap.get(urlArray[3]);
+				console.log('value of ct',ct);
+				console.log('value of lg',lg);
+				embeddedservice_bootstrap.prechatAPI.setHiddenPrechatFields({
+  																				Country: ct,
+  																				Language: lg,
+ 																			});
+			});
+			embeddedservice_bootstrap.init(
+				'00DMA000003XnGM',
+				'LPM_Leapmotor',
+				'https://leapmotor--dev01.sandbox.my.site.com/ESWLPMLeapmotor1760706603231',
+				{
+					scrt2URL: 'https://leapmotor--dev01.sandbox.my.salesforce-scrt.com'
+				}
+			);
+		} catch (err) {
+			console.error('Error loading Embedded Messaging: ', err);
+		}
+	};
+</script>
+<script type='text/javascript' src='https://leapmotor--dev01.sandbox.my.site.com/ESWLPMLeapmotor1760706603231/assets/js/bootstrap.min.js' onload='initEmbeddedMessaging()'></script>
+</body>
+</html>

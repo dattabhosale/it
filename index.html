@@ -1,0 +1,152 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>LeapReplica - Electric Vehicles</title>
+  <link rel="stylesheet" href="css/style.css" />
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap" rel="stylesheet">
+</head>
+<body>
+  <header class="site-header">
+    <div class="container header-inner">
+      <a href="/" class="brand">LeapReplica</a>
+      <nav class="site-nav" id="site-nav">
+        <a href="index.html">Home</a>
+        <a href="products.html">Products</a>
+        <a href="about.html">About</a>
+        <a href="contact.html">Contact</a>
+      </nav>
+      <button class="nav-toggle" id="nav-toggle" aria-label="Toggle navigation">☰</button>
+    </div>
+  </header>
+
+  <main>
+    <section class="hero">
+      <div class="container hero-inner">
+        <div class="hero-copy">
+          <h1>Electric mobility, designed for the future.</h1>
+          <p>Explore a new generation of electric vehicles with long range, smart features, and bold design.</p>
+          <p><a class="btn" href="products.html">View Models</a></p>
+        </div>
+        <div class="hero-media">
+          <img src="assets/car-hero.jpg" alt="Electric car mockup">
+        </div>
+      </div>
+    </section>
+
+    <section class="highlights">
+      <div class="container">
+        <h2>Featured Models</h2>
+        <div class="cards">
+          <article class="card">
+            <img src="assets/model-a.jpg" alt="Model A">
+            <h3>Model A</h3>
+            <p>Long range, fast charging, advanced driver assistance.</p>
+            <p><a class="link" href="products.html">Learn more</a></p>
+          </article>
+
+          <article class="card">
+            <img src="assets/model-b.jpg" alt="Model B">
+            <h3>Model B</h3>
+            <p>Urban performance with compact design and premium interior.</p>
+            <p><a class="link" href="products.html">Learn more</a></p>
+          </article>
+
+          <article class="card">
+            <img src="assets/model-c.jpg" alt="Model C">
+            <h3>Model C</h3>
+            <p>An intelligent SUV with family-friendly range and space.</p>
+            <p><a class="link" href="products.html">Learn more</a></p>
+          </article>
+        </div>
+      </div>
+    </section>
+
+    <section class="about-teaser">
+      <div class="container">
+        <h2>Our Vision</h2>
+        <p>We build electric vehicles that are safe, sustainable and delightful to drive. Technology and design come together to make mobility more efficient and enjoyable.</p>
+        <p><a class="btn ghost" href="about.html">Learn about us</a></p>
+      </div>
+    </section>
+  </main>
+
+  <footer class="site-footer">
+    <div class="container">
+      <div>© 2025 LeapReplica</div>
+      <nav class="foot-nav">
+        <a href="privacy.html">Privacy</a>
+        <a href="contact.html">Contact</a>
+      </nav>
+    </div>
+  </footer>
+
+  <script src="js/main.js"></script>
+  <script type='text/javascript'>
+	function initEmbeddedMessaging() {
+		try {
+			embeddedservice_bootstrap.settings.language = 'en_US'; // For example, enter 'en' or 'en-US'
+			window.addEventListener("onEmbeddedMessagingReady", () => {
+				const currentUrl = window.location.href;
+				console.log(currentUrl); // Example: https://www.example.com/path/to/page?param1=value1#section
+				const urlArray = currentUrl.split("/")
+				console.log( "urlArray", urlArray );
+				console.log(" Url Country", urlArray[3]);
+				const languageData = [
+  										['uk', 'English'],
+  										['it', 'Italian'],
+  										['de', 'Deutsch'],
+										['fr', 'Français'],
+										['cz', 'Czech'],
+										['ie', 'English'],
+										['hu', 'Magyar'],
+										['gr', 'Greek'],
+										['hr', 'Croatian'],
+										['bg','Bulgarian'],
+										['nl', 'Nederland'],
+										['pt', 'Português']
+									];
+				const languageMap = new Map(languageData);
+				const countryData = [
+  										['uk', 'United Kingdom'],
+  										['it', 'Italy'],
+  										['de', 'Deutschland'],
+										['fr', 'France'],
+										['cz', 'Czech Republic'],
+										['ie', 'Ireland'],
+										['hu', 'Hungary'],
+										['gr', 'Greece'],
+										['hr', 'Croatia'],
+										['bg', 'Bulgaria'],
+										['nl', 'Nederland'],
+										['pt', 'Portugal']
+									];
+				const countryMap = new Map(countryData);
+				const ct = countryMap.get( urlArray[3]);
+				const lg = languageMap.get( urlArray[3];);
+				console.log('value of ct',ct);
+				console.log('value of lg',lg);
+				embeddedservice_bootstrap.prechatAPI.setHiddenPrechatFields({
+  																				Country: ct,
+  																				Language: lg,
+ 																			});
+			});
+			embeddedservice_bootstrap.init(
+				'00DMA000003XnGM',
+				'LPM_Leapmotor',
+				'https://leapmotor--dev01.sandbox.my.site.com/ESWLPMLeapmotor1760706603231',
+				{
+					scrt2URL: 'https://leapmotor--dev01.sandbox.my.salesforce-scrt.com'
+				}
+			);
+		} catch (err) {
+			console.error('Error loading Embedded Messaging: ', err);
+		}
+	};
+</script>
+<script type='text/javascript' src='https://leapmotor--dev01.sandbox.my.site.com/ESWLPMLeapmotor1760706603231/assets/js/bootstrap.min.js' onload='initEmbeddedMessaging()'></script>
+</body>
+</html>

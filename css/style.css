@@ -1,0 +1,56 @@
+/* Basic reset and variables */
+:root{
+  --bg:#fff;
+  --text:#111;
+  --muted:#666;
+  --accent:#0066ff;
+}
+*{box-sizing:border-box}
+html,body{height:100%}
+body{
+  margin:0;
+  font-family:Inter, system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial;
+  color:var(--text);
+  background:var(--bg);
+  -webkit-font-smoothing:antialiased;
+}
+.container{max-width:1100px;margin:0 auto;padding:0 20px}
+.site-header{background:linear-gradient(90deg,#fff, #f8fbff);border-bottom:1px solid #eee}
+.header-inner{display:flex;align-items:center;justify-content:space-between;padding:18px 0}
+.brand{font-weight:700;text-decoration:none;color:var(--text);font-size:1.15rem}
+.site-nav a{margin-left:20px;text-decoration:none;color:var(--muted)}
+.nav-toggle{display:none;background:transparent;border:0;font-size:1.4rem}
+
+.hero{padding:60px 0}
+.hero-inner{display:flex;gap:40px;align-items:center}
+.hero-copy h1{font-size:2.1rem;margin:0 0 12px}
+.hero-copy p{color:var(--muted);margin:0 0 12px}
+.btn{display:inline-block;background:var(--accent);color:#fff;padding:10px 16px;border-radius:6px;text-decoration:none}
+.btn.ghost{background:transparent;color:var(--accent);border:1px solid #e6eefb}
+.hero-media img{max-width:460px;width:100%;height:auto;border-radius:10px}
+
+.highlights{padding:40px 0}
+.cards{display:grid;grid-template-columns:repeat(3,1fr);gap:20px}
+.card{border:1px solid #eee;padding:16px;border-radius:8px}
+.card img{width:100%;height:160px;object-fit:cover;border-radius:6px}
+.link{color:var(--accent);text-decoration:none}
+
+.about-teaser{padding:40px 0;background:#fafcfe}
+
+.models{padding:40px 0}
+.grid{display:grid;grid-template-columns:repeat(3,1fr);gap:18px}
+.model-card{border:1px solid #eee;padding:12px;border-radius:8px;text-align:center}
+.model-card img{width:100%;height:180px;object-fit:cover;border-radius:6px}
+
+.site-footer{border-top:1px solid #eee;padding:18px 0;margin-top:40px}
+.foot-nav a{margin-left:12px;color:var(--muted);text-decoration:none}
+
+/* Responsive */
+@media (max-width:900px){
+  .hero-inner{flex-direction:column;text-align:center}
+  .cards{grid-template-columns:repeat(1,1fr)}
+  .grid{grid-template-columns:repeat(1,1fr)}
+  .nav-toggle{display:block}
+  .site-nav{display:none}
+  .site-nav.open{display:block;position:absolute;left:20px;right:20px;top:68px;background:#fff;padding:12px;border-radius:8px;box-shadow:0 6px 20px rgba(20,20,40,0.06)}
+}
