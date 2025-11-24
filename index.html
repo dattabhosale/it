@@ -93,50 +93,10 @@
       try {
         embeddedservice_bootstrap.settings.language = 'en_US'; // For example, enter 'en' or 'en-US'
         window.addEventListener("onEmbeddedMessagingReady", () => {
-          const currentUrl = window.location.href;
-          console.log(currentUrl); // Example: https://www.example.com/path/to/page?param1=value1#section
-          const urlArray = currentUrl.split("/")
-          console.log("urlArray", urlArray);
-          console.log(" Url Country", urlArray[3]);
-          const country = urlArray[3];
-          const languageData = [
-            ['uk', 'English'],
-            ['it', 'Italian'],
-            ['de', 'Deutsch'],
-            ['fr', 'Français'],
-            ['cz', 'Czech'],
-            ['ie', 'English'],
-            ['hu', 'Magyar'],
-            ['gr', 'Greek'],
-            ['hr', 'Croatian'],
-            ['bg', 'Bulgarian'],
-            ['nl', 'Nederland'],
-            ['pt', 'Português']
-          ];
-          const languageMap = new Map(languageData);
-          const countryData = [
-            ['uk', 'United Kingdom'],
-            ['it', 'Italy'],
-            ['de', 'Deutschland'],
-            ['fr', 'France'],
-            ['cz', 'Czech Republic'],
-            ['ie', 'Ireland'],
-            ['hu', 'Hungary'],
-            ['gr', 'Greece'],
-            ['hr', 'Croatia'],
-            ['bg', 'Bulgaria'],
-            ['nl', 'Nederland'],
-            ['pt', 'Portugal']
-          ];
-          const countryMap = new Map(countryData);
-          const ct = countryMap.get(country);
-          const lg = languageMap.get(country);
-          console.log('value of ct', ct);
-          console.log('value of lg', lg);
           embeddedservice_bootstrap.prechatAPI.setHiddenPrechatFields({
-            Country: ct,
-            Language: lg,
-            CountryCode:country
+            Country: 'Italy',
+            Language: 'it',
+            CountryCode:'it'
           });
         });
         embeddedservice_bootstrap.init(
