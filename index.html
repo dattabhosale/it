@@ -119,6 +119,8 @@
 <script type='text/javascript'>
 (function () {
   console.log("🎄 Christmas Chat Button - Simplified Version");
+  var chatIsOpen = false; // Track if chat is currently open
+  var apiReady = false; // Track if Salesforce API is ready
   // Inject minimal CSS
   (function injectCSS() {
     var style = document.createElement("style");
@@ -180,6 +182,11 @@
       
       #christmas-chat-btn:active {
         transform: translateY(-2px) scale(1.02);
+      }
+      
+      #christmas-chat-btn.loading {
+        opacity: 0.7;
+        cursor: wait;
       }
       
       .chat-icon {
@@ -279,7 +286,8 @@
     // Text - NO CAROUSEL, static text
     var text = document.createElement("span");
     text.className = "chat-text";
-    text.textContent = "🎄 Chat with us! 🎅";
+    text.id = "chat-text-span";
+    text.textContent = apiReady ? "🎄 Chat with us! 🎅" : "⏳ Loading chat...";
     
     btn.appendChild(icon);
     btn.appendChild(text);
@@ -289,113 +297,79 @@
       e.preventDefault();
       e.stopPropagation();
       
-      console.log("=".repeat(60));
+      // Check if API is ready
+      if (!apiReady) {
+        console.warn("⚠️ Chat API not ready yet, please wait...");
+        alert("Chat is still loading. Please wait a moment and try again.");
+        return;
+      }
+      
+      console.log("============================================================");
       console.log("🎅 BUTTON CLICKED - ATTEMPTING TO LAUNCH CHAT");
-      console.log("=".repeat(60));
+      console.log("============================================================");
       
       var es = window.embeddedservice_bootstrap;
       
-      console.log("Step 1: Check bootstrap exists:", !!es);
-      
-      if (!es) {
-        console.error("❌ embeddedservice_bootstrap not found!");
-        alert("Chat system not loaded. Please refresh the page.");
+      if (!es || !es.utilAPI) {
+        console.error("❌ Chat API not available!");
+        alert("Chat system not ready. Please refresh the page.");
         return;
       }
       
-      console.log("Step 2: Bootstrap keys:", Object.keys(es));
-      console.log("Step 3: Check utilAPI exists:", !!es.utilAPI);
-      
-      if (!es.utilAPI) {
-        console.error("❌ utilAPI not available!");
-        console.log("Available on bootstrap:", Object.keys(es));
-        alert("Chat API not ready. Please wait a moment and try again.");
-        return;
-      }
-      
-      console.log("Step 4: utilAPI methods:", Object.keys(es.utilAPI));
+      console.log("Available methods:", Object.keys(es.utilAPI));
       
       // Try to launch
       var success = false;
       
       // Method 1: launchChat
       if (typeof es.utilAPI.launchChat === "function") {
-        console.log("Step 5: Calling launchChat()...");
+        console.log("Calling launchChat()...");
         try {
           var result = es.utilAPI.launchChat();
-          console.log("   Result:", result);
+          console.log("✅ Chat launch called");
           success = true;
           
           if (result && typeof result.then === "function") {
             result.then(function() {
-              console.log("   ✅ Chat opened successfully!");
+              console.log("✅ Chat opened!");
             }).catch(function(err) {
-              console.error("   ❌ Error:", err);
+              console.error("❌ Error:", err);
             });
           }
         } catch (err) {
-          console.error("   ❌ Exception:", err);
+          console.error("❌ Exception:", err);
           success = false;
         }
-      } else {
-        console.warn("⚠️ launchChat not found");
       }
       
       // Method 2: Try maximizeWindow
       if (!success && typeof es.utilAPI.maximizeWindow === "function") {
-        console.log("Step 6: Trying maximizeWindow()...");
+        console.log("Trying maximizeWindow()...");
         try {
           es.utilAPI.maximizeWindow();
-          console.log("   ✅ Called maximizeWindow");
+          console.log("✅ maximizeWindow called");
           success = true;
         } catch (err) {
-          console.error("   ❌ Exception:", err);
-        }
-      }
-      
-      // Method 3: Try any method with "open" or "launch"
-      if (!success) {
-        console.log("Step 7: Searching for alternative methods...");
-        var methods = Object.keys(es.utilAPI).filter(function(k) {
-          return typeof es.utilAPI[k] === 'function';
-        });
-        console.log("   All available methods:", methods);
-        
-        var chatMethods = methods.filter(function(k) {
-          var lower = k.toLowerCase();
-          return lower.includes('open') || lower.includes('launch') || 
-                 lower.includes('show') || lower.includes('start');
-        });
-        console.log("   Chat-related methods:", chatMethods);
-        
-        if (chatMethods.length > 0) {
-          console.log("   Trying:", chatMethods[0]);
-          try {
-            es.utilAPI[chatMethods[0]]();
-            console.log("   ✅ Called", chatMethods[0]);
-            success = true;
-          } catch (err) {
-            console.error("   ❌ Exception:", err);
-          }
+          console.error("❌ Exception:", err);
         }
       }
       
       if (!success) {
-        console.error("❌ FAILED - Could not find working method to launch chat");
-        console.log("This might be a Salesforce configuration issue.");
+        console.error("❌ Could not launch chat");
         alert("Unable to launch chat. Please check console for details.");
       }
       
-      console.log("=".repeat(60));
+      console.log("============================================================");
     });
     
     container.appendChild(btn);
     document.body.appendChild(container);
     
-    console.log("✅ Simple button created and added to page");
+    console.log("✅ Button created and added to page");
   }
  
   function hideButton() {
+    chatIsOpen = true;
     var container = document.getElementById('christmas-chat-container');
     if (container) {
       container.style.display = 'none';
@@ -404,6 +378,7 @@
   }
   
   function showButton() {
+    chatIsOpen = false;
     var container = document.getElementById('christmas-chat-container');
     if (container) {
       container.style.display = 'block';
@@ -411,9 +386,27 @@
     }
   }
   
+  function updateButtonText() {
+    var textSpan = document.getElementById('chat-text-span');
+    if (textSpan) {
+      textSpan.textContent = apiReady ? "🎄 Chat with us! 🎅" : "⏳ Loading chat...";
+    }
+    
+    var btn = document.getElementById('christmas-chat-btn');
+    if (btn) {
+      if (apiReady) {
+        btn.classList.remove('loading');
+      } else {
+        btn.classList.add('loading');
+      }
+    }
+  }
+  
   // Listen to Salesforce chat events
   window.addEventListener("onEmbeddedMessagingReady", function() {
-    console.log("📢 Salesforce Messaging Ready");
+    console.log("📢 Salesforce Messaging Ready - API is now available!");
+    apiReady = true;
+    updateButtonText();
     hideStandardButtons();
   });
   
@@ -441,14 +434,17 @@
     hideStandardButtons();
   }, 1000);
   
-  // Periodic checks - hide standard buttons and ensure custom button exists
+  // Periodic checks - hide standard buttons and ensure custom button exists (only if chat is NOT open)
   setInterval(function() {
     hideStandardButtons();
     
-    var container = document.getElementById('christmas-chat-container');
-    if (!container) {
-      console.log("🔧 Button missing, recreating...");
-      createSimpleButton();
+    // Only recreate button if it doesn't exist AND chat is not open
+    if (!chatIsOpen) {
+      var container = document.getElementById('christmas-chat-container');
+      if (!container) {
+        console.log("🔧 Button missing, recreating...");
+        createSimpleButton();
+      }
     }
   }, 2000);
   
@@ -458,6 +454,7 @@
 <script type='text/javascript'
   src='https://leapmotor--dev01.sandbox.my.site.com/ESWLPMLeapmotor1760706603231/assets/js/bootstrap.min.js'
   onload='initEmbeddedMessaging()'></script>
+
 
 </body>
 
