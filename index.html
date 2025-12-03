@@ -91,9 +91,7 @@
   <script type='text/javascript'>
     function initEmbeddedMessaging() {
       try {
-        embeddedservice_bootstrap.settings.language = 'es'; // For example, enter 'en' or 'en-US'
-
-        // Personalizzazione del pulsante
+        embeddedservice_bootstrap.settings.language = 'es';
         embeddedservice_bootstrap.settings.displayHelpButton = true;
         embeddedservice_bootstrap.settings.defaultMinimizedText = "Chat with Leappy";
         embeddedservice_bootstrap.settings.disabledMinimizedText = "Leappy Offline";
@@ -105,6 +103,7 @@
             CountryCode:'es'
           });
         });
+        
         embeddedservice_bootstrap.init(
           '00DMA000003XnGM',
           'LPM_Leapmotor',
@@ -118,143 +117,230 @@
       }
     };
 	(function () {
-  console.log("Test custom chat button");
+  console.log("Christmas chat button with carousel initialized");
  
+  // Christmas-themed carousel messages
+  var carouselMessages = [
+    "🎄 Ho Ho Ho! Chat with us! 🎅",
+    "❄️ Merry Chatmas! We're here! ☃️",
+    "🎁 Unwrap Support! Click here! 🎀",
+    "⭐ Holiday Help Available! ✨",
+    "🔔 Jingle all the way to chat! 🎄"
+  ];
+  var currentMessageIndex = 0;
+  var carouselInterval = null;
+  var customButtonCreated = false;
+  // Inject CSS to hide standard button immediately
+  (function injectHideCSS() {
+    var style = document.createElement("style");
+    style.id = "hide-standard-chat-button";
+    style.textContent = `
+      .embeddedMessagingFrame,
+      .embeddedMessagingConversationButton,
+      .embeddedServiceHelpButton,
+      .embeddedServiceSidebar,
+      .helpButtonEnabled,
+      .uiButton.helpButtonEnabled {
+        display: none !important;
+        visibility: hidden !important;
+        opacity: 0 !important;
+        pointer-events: none !important;
+      }
+      
+      @keyframes snowfall {
+        0% { transform: translateY(-10px); opacity: 0; }
+        50% { opacity: 1; }
+        100% { transform: translateY(10px); opacity: 0; }
+      }
+      
+      #leap-chat-cta::before {
+        animation: snowfall 2s ease-in-out infinite;
+      }
+    `;
+    document.head.appendChild(style);
+  })();
   function hideStandardButton(es) {
     if (es && es.utilAPI && typeof es.utilAPI.hideChatButton === "function") {
       try {
         es.utilAPI.hideChatButton();
-        console.log("hideChatButton() called");
+        console.log("Standard button hidden via API");
       } catch (e) {
         console.warn("Error calling hideChatButton()", e);
       }
     }
   }
  
-  function showCustomCTA(es) {
-    if (!es || !es.utilAPI) {
-      console.warn("utilAPI not available");
-      return;
+  function startCarousel(textSpan) {
+    if (carouselInterval) clearInterval(carouselInterval);
+    
+    carouselInterval = setInterval(function() {
+      currentMessageIndex = (currentMessageIndex + 1) % carouselMessages.length;
+      textSpan.textContent = carouselMessages[currentMessageIndex];
+    }, 3000);
+  }
+  
+  function stopCarousel() {
+    if (carouselInterval) {
+      clearInterval(carouselInterval);
+      carouselInterval = null;
     }
+  }
  
-    var existing = document.getElementById("leap-chat-cta");
-    if (existing) {
-      existing.style.display = "inline-flex";
-      hideStandardButton(es);
-      console.log("Custom CTA shown again");
+  function createChatIcon() {
+    var icon = document.createElement("span");
+    icon.innerHTML = `
+      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" style="margin-right: 8px;">
+        <path d="M20 2H4C2.9 2 2 2.9 2 4V22L6 18H20C21.1 18 22 17.1 22 16V4C22 2.9 21.1 2 20 2Z" 
+              fill="white" stroke="white" stroke-width="1.5"/>
+        <circle cx="8" cy="10" r="1.5" fill="#c41e3a"/>
+        <circle cx="12" cy="10" r="1.5" fill="#c41e3a"/>
+        <circle cx="16" cy="10" r="1.5" fill="#c41e3a"/>
+      </svg>
+    `;
+    return icon;
+  }
+ 
+  function showCustomCTA(es) {
+    if (customButtonCreated) {
+      var existing = document.getElementById("leap-chat-cta");
+      if (existing) {
+        existing.style.display = "inline-flex";
+        var textSpan = existing.querySelector("span");
+        if (textSpan) startCarousel(textSpan);
+      }
       return;
     }
  
     var btn = document.createElement("button");
     btn.id = "leap-chat-cta";
-    btn.textContent = "Talk with Agentforce! ;)";
  
+    var icon = createChatIcon();
+    var textSpan = document.createElement("span");
+    textSpan.textContent = carouselMessages[0];
+    
+    btn.appendChild(icon);
+    btn.appendChild(textSpan);
+ 
+    // Styling
     btn.style.position = "fixed";
     btn.style.right = "24px";
     btn.style.bottom = "24px";
     btn.style.zIndex = "99999";
- 
-    btn.style.padding = "16px 28px";
-    btn.style.fontSize = "18px";
+    btn.style.padding = "14px 24px";
+    btn.style.fontSize = "16px";
     btn.style.fontWeight = "700";
-    btn.style.borderRadius = "999px";
-    btn.style.border = "none";
+    btn.style.borderRadius = "50px";
+    btn.style.border = "3px solid #fff";
     btn.style.cursor = "pointer";
-    btn.style.boxShadow = "0 4px 10px rgba(0,0,0,0.3)";
-    btn.style.backgroundColor = "#0070d2";
+    btn.style.boxShadow = "0 8px 20px rgba(196, 30, 58, 0.4)";
+    btn.style.background = "linear-gradient(135deg, #c41e3a 0%, #165b33 100%)";
     btn.style.color = "#ffffff";
     btn.style.display = "inline-flex";
     btn.style.alignItems = "center";
     btn.style.justifyContent = "center";
+    btn.style.transition = "all 0.3s ease";
+    btn.style.minWidth = "300px";
  
     btn.addEventListener("mouseenter", function () {
-      btn.style.transform = "scale(1.03)";
+      btn.style.transform = "scale(1.08) rotate(2deg)";
+      btn.style.boxShadow = "0 12px 30px rgba(196, 30, 58, 0.6)";
+      stopCarousel();
     });
+    
     btn.addEventListener("mouseleave", function () {
-      btn.style.transform = "scale(1)";
+      btn.style.transform = "scale(1) rotate(0deg)";
+      btn.style.boxShadow = "0 8px 20px rgba(196, 30, 58, 0.4)";
+      startCarousel(textSpan);
     });
  
     btn.addEventListener("click", function () {
-      if (typeof es.utilAPI.launchChat === "function") {
-        console.log("launchChat() from CTA");
-        var r = es.utilAPI.launchChat();
-        if (r && typeof r.then === "function") {
-          r.then(function () {
-            console.log("Chat launched (Promise resolved)");
-          }).catch(function (err) {
-            console.error("Error launching chat", err);
-          });
-        }
-      } else {
-        console.warn("launchChat() not available");
+      stopCarousel();
+      if (es && es.utilAPI && typeof es.utilAPI.launchChat === "function") {
+        console.log("Launching chat from Christmas button");
+        es.utilAPI.launchChat();
       }
     });
  
     document.body.appendChild(btn);
+    customButtonCreated = true;
     hideStandardButton(es);
-    console.log("Custom CTA created");
+    startCarousel(textSpan);
+    console.log("Christmas CTA created");
   }
  
   function hideCustomCTA() {
     var btn = document.getElementById("leap-chat-cta");
     if (btn) {
       btn.style.display = "none";
-      console.log("Custom CTA hidden");
+      stopCarousel();
     }
   }
  
+  // Event listeners
   window.addEventListener("onEmbeddedMessagingButtonCreated", function () {
-    console.log("onEmbeddedMessagingButtonCreated fired");
+    console.log("Button created event");
     var es = window.embeddedservice_bootstrap;
-    if (es) {
-      showCustomCTA(es);
-    }
+    hideStandardButton(es);
+    showCustomCTA(es);
   });
  
-  window.addEventListener("onEmbeddedMessagingWindowMaximized", function () {
-    console.log("onEmbeddedMessagingWindowMaximized fired");
-    hideCustomCTA();
-  });
+  window.addEventListener("onEmbeddedMessagingWindowMaximized", hideCustomCTA);
  
   window.addEventListener("onEmbeddedMessagingWindowMinimized", function () {
-    console.log("onEmbeddedMessagingWindowMinimized fired");
     var es = window.embeddedservice_bootstrap;
-    if (es) {
-      hideStandardButton(es);
-      showCustomCTA(es);
-    }
+    hideStandardButton(es);
+    showCustomCTA(es);
   });
  
-  function waitForES(maxAttempts, intervalMs) {
+  // Optimized initialization - reduced wait time
+  function initCustomButton() {
+    var es = window.embeddedservice_bootstrap;
+    if (es && es.utilAPI) {
+      console.log("utilAPI ready");
+      hideStandardButton(es);
+      showCustomCTA(es);
+      return true;
+    }
+    return false;
+  }
+  
+  // Try immediately
+  if (!initCustomButton()) {
+    // Retry with optimized timing
     var attempts = 0;
-    (function check() {
-      attempts++;
-      var es = window.embeddedservice_bootstrap;
-      if (es && es.utilAPI) {
-        console.log("utilAPI ready (initial)");
-        showCustomCTA(es);
-        return;
+    var checkInterval = setInterval(function() {
+      if (initCustomButton() || ++attempts > 20) {
+        clearInterval(checkInterval);
       }
-      if (attempts >= maxAttempts) {
-        console.warn("utilAPI not found after", attempts, "attempts");
-        return;
+    }, 100);
+  }
+  
+  // Lightweight observer for standard button
+  var observer = new MutationObserver(function(mutations) {
+    for (var i = 0; i < mutations.length; i++) {
+      var nodes = mutations[i].addedNodes;
+      for (var j = 0; j < nodes.length; j++) {
+        var node = nodes[j];
+        if (node.nodeType === 1 && node.classList) {
+          var isStandardBtn = node.classList.contains('embeddedMessagingConversationButton') ||
+                              node.classList.contains('embeddedServiceHelpButton') ||
+                              node.classList.contains('helpButtonEnabled');
+          if (isStandardBtn) {
+            hideStandardButton(window.embeddedservice_bootstrap);
+            break;
+          }
+        }
       }
-      setTimeout(check, intervalMs);
-    })();
-  }
- 
-  if (document.readyState === "complete" || document.readyState === "interactive") {
-    waitForES(50, 200);
-  } else {
-    window.addEventListener("DOMContentLoaded", function () {
-      waitForES(50, 200);
-    });
-  }
+    }
+  });
+  
+  observer.observe(document.body, { childList: true, subtree: true });
 })();
   </script>
   <script type='text/javascript'
     src='https://leapmotor--dev01.sandbox.my.site.com/ESWLPMLeapmotor1760706603231/assets/js/bootstrap.min.js'
     onload='initEmbeddedMessaging()'></script>
+
 </body>
 
 </html>
