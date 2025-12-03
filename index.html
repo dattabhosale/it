@@ -140,14 +140,31 @@
     }
     
     // Also try to hide by finding and hiding the button element directly
+    // Be very specific to only target Salesforce buttons, not our custom button
     try {
-      var standardButtons = document.querySelectorAll('[id*="embedded-messaging"], [class*="embeddedMessaging"], [class*="slds-"], button[aria-label*="Chat"]');
-      standardButtons.forEach(function(btn) {
-        if (btn.id !== "leap-chat-cta" && btn.id !== "chat-button-styles") {
-          btn.style.display = "none";
-          btn.style.visibility = "hidden";
-          btn.style.opacity = "0";
-          console.log("Hiding standard button element:", btn);
+      // Target Salesforce-specific selectors
+      var salesforceSelectors = [
+        '[id*="embedded-messaging"]:not(#leap-chat-cta)',
+        '[class*="embeddedMessaging"]:not(#leap-chat-cta)',
+        '[class*="slds-chat"]:not(#leap-chat-cta)',
+        '[class*="embeddedServiceHelpButton"]:not(#leap-chat-cta)',
+        'button[class*="uiButton"][class*="helpButton"]:not(#leap-chat-cta)'
+      ];
+      
+      salesforceSelectors.forEach(function(selector) {
+        try {
+          var elements = document.querySelectorAll(selector);
+          elements.forEach(function(btn) {
+            // Double-check it's not our custom button
+            if (btn.id !== "leap-chat-cta" && btn.id !== "chat-button-styles") {
+              btn.style.display = "none !important";
+              btn.style.visibility = "hidden !important";
+              btn.style.opacity = "0 !important";
+              btn.style.pointerEvents = "none !important";
+            }
+          });
+        } catch (e) {
+          // Ignore selector errors
         }
       });
     } catch (e) {
@@ -159,16 +176,28 @@
     if (buttonObserver) {
       buttonObserver.disconnect();
     }
+    let throttleTimeout = null;
+    
     // Create a MutationObserver to watch for standard button appearing
     buttonObserver = new MutationObserver(function(mutations) {
-      hideStandardButton(es);
+      // Throttle the hideStandardButton calls to avoid excessive execution
+      if (!throttleTimeout) {
+        throttleTimeout = setTimeout(function() {
+          // Make sure our custom button still exists and is visible
+          var customBtn = document.getElementById("leap-chat-cta");
+          if (customBtn) {
+            hideStandardButton(es);
+          }
+          throttleTimeout = null;
+        }, 100); // Wait 100ms between hide attempts
+      }
     });
     // Start observing the document body for changes
     buttonObserver.observe(document.body, {
       childList: true,
       subtree: true,
       attributes: true,
-      attributeFilter: ['style', 'class']
+      attributeFilter: ['style', 'class', 'display']
     });
     
     console.log("Button observer started");
