@@ -92,7 +92,7 @@
     function initEmbeddedMessaging() {
       try {
         embeddedservice_bootstrap.settings.language = 'es';
-        embeddedservice_bootstrap.settings.displayHelpButton = true;
+        embeddedservice_bootstrap.settings.displayHelpButton = false; // Set to false to prevent standard button
         embeddedservice_bootstrap.settings.defaultMinimizedText = "Chat with Leappy";
         embeddedservice_bootstrap.settings.disabledMinimizedText = "Leappy Offline";
         
@@ -117,7 +117,7 @@
       }
     };
 	(function () {
-  console.log("Christmas chat button with carousel initialized");
+  console.log("Christmas chat button - Enhanced version");
  
   // Christmas-themed carousel messages
   var carouselMessages = [
@@ -129,45 +129,87 @@
   ];
   var currentMessageIndex = 0;
   var carouselInterval = null;
-  var customButtonCreated = false;
-  // Inject CSS to hide standard button immediately
-  (function injectHideCSS() {
+  var customButton = null;
+  var chatIsOpen = false;
+  // Aggressive CSS injection to hide standard button in ALL states
+  (function injectAggressiveCSS() {
     var style = document.createElement("style");
-    style.id = "hide-standard-chat-button";
+    style.id = "hide-standard-chat-aggressive";
     style.textContent = `
+      /* Hide all possible Salesforce chat button classes */
       .embeddedMessagingFrame,
       .embeddedMessagingConversationButton,
       .embeddedServiceHelpButton,
       .embeddedServiceSidebar,
       .helpButtonEnabled,
-      .uiButton.helpButtonEnabled {
+      .uiButton.helpButtonEnabled,
+      button[aria-label*="Chat"],
+      button[class*="embeddedMessaging"],
+      button[class*="embeddedService"],
+      div[class*="embeddedMessagingConversationButton"],
+      div[class*="embeddedServiceHelpButton"],
+      iframe[title*="chat" i],
+      [data-esw],
+      .embeddedServiceHelpButton .helpButton,
+      .embeddedServiceHelpButton .uiButton {
         display: none !important;
         visibility: hidden !important;
         opacity: 0 !important;
         pointer-events: none !important;
+        width: 0 !important;
+        height: 0 !important;
+        position: absolute !important;
+        left: -9999px !important;
       }
       
-      @keyframes snowfall {
-        0% { transform: translateY(-10px); opacity: 0; }
-        50% { opacity: 1; }
-        100% { transform: translateY(10px); opacity: 0; }
+      /* Keep only our custom button visible */
+      #leap-chat-cta {
+        display: inline-flex !important;
+        visibility: visible !important;
+        opacity: 1 !important;
       }
       
-      #leap-chat-cta::before {
-        animation: snowfall 2s ease-in-out infinite;
+      #leap-chat-cta.hidden-state {
+        display: none !important;
       }
     `;
     document.head.appendChild(style);
+    console.log("✅ Aggressive CSS injected to hide standard buttons");
   })();
-  function hideStandardButton(es) {
+  // Aggressive standard button hiding
+  function forceHideStandardButtons() {
+    var es = window.embeddedservice_bootstrap;
+    
+    // Method 1: Use API
     if (es && es.utilAPI && typeof es.utilAPI.hideChatButton === "function") {
       try {
         es.utilAPI.hideChatButton();
-        console.log("Standard button hidden via API");
       } catch (e) {
-        console.warn("Error calling hideChatButton()", e);
+        console.warn("API hide failed:", e);
       }
     }
+    
+    // Method 2: Find and hide by class/selector
+    var selectors = [
+      '.embeddedMessagingConversationButton',
+      '.embeddedServiceHelpButton',
+      '.helpButtonEnabled',
+      'button[aria-label*="Chat"]',
+      'button[class*="embeddedMessaging"]',
+      'button[class*="embeddedService"]'
+    ];
+    
+    selectors.forEach(function(selector) {
+      var elements = document.querySelectorAll(selector);
+      elements.forEach(function(el) {
+        if (el.id !== 'leap-chat-cta') {
+          el.style.display = 'none';
+          el.style.visibility = 'hidden';
+          el.style.opacity = '0';
+          el.style.pointerEvents = 'none';
+        }
+      });
+    });
   }
  
   function startCarousel(textSpan) {
@@ -175,7 +217,9 @@
     
     carouselInterval = setInterval(function() {
       currentMessageIndex = (currentMessageIndex + 1) % carouselMessages.length;
-      textSpan.textContent = carouselMessages[currentMessageIndex];
+      if (textSpan) {
+        textSpan.textContent = carouselMessages[currentMessageIndex];
+      }
     }, 3000);
   }
   
@@ -189,7 +233,7 @@
   function createChatIcon() {
     var icon = document.createElement("span");
     icon.innerHTML = `
-      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" style="margin-right: 8px;">
+      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" style="margin-right: 8px; flex-shrink: 0;">
         <path d="M20 2H4C2.9 2 2 2.9 2 4V22L6 18H20C21.1 18 22 17.1 22 16V4C22 2.9 21.1 2 20 2Z" 
               fill="white" stroke="white" stroke-width="1.5"/>
         <circle cx="8" cy="10" r="1.5" fill="#c41e3a"/>
@@ -200,15 +244,10 @@
     return icon;
   }
  
-  function showCustomCTA(es) {
-    if (customButtonCreated) {
-      var existing = document.getElementById("leap-chat-cta");
-      if (existing) {
-        existing.style.display = "inline-flex";
-        var textSpan = existing.querySelector("span");
-        if (textSpan) startCarousel(textSpan);
-      }
-      return;
+  function createCustomButton() {
+    if (customButton) {
+      console.log("Custom button already exists");
+      return customButton;
     }
  
     var btn = document.createElement("button");
@@ -216,6 +255,7 @@
  
     var icon = createChatIcon();
     var textSpan = document.createElement("span");
+    textSpan.id = "chat-text-content";
     textSpan.textContent = carouselMessages[0];
     
     btn.appendChild(icon);
@@ -225,7 +265,7 @@
     btn.style.position = "fixed";
     btn.style.right = "24px";
     btn.style.bottom = "24px";
-    btn.style.zIndex = "99999";
+    btn.style.zIndex = "2147483647"; // Maximum z-index
     btn.style.padding = "14px 24px";
     btn.style.fontSize = "16px";
     btn.style.fontWeight = "700";
@@ -254,87 +294,163 @@
     });
  
     btn.addEventListener("click", function () {
+      console.log("Custom button clicked");
       stopCarousel();
+      chatIsOpen = true;
+      var es = window.embeddedservice_bootstrap;
       if (es && es.utilAPI && typeof es.utilAPI.launchChat === "function") {
-        console.log("Launching chat from Christmas button");
-        es.utilAPI.launchChat();
+        es.utilAPI.launchChat().then(function() {
+          console.log("✅ Chat launched successfully");
+        }).catch(function(err) {
+          console.error("❌ Error launching chat:", err);
+        });
       }
     });
  
-    document.body.appendChild(btn);
-    customButtonCreated = true;
-    hideStandardButton(es);
-    startCarousel(textSpan);
-    console.log("Christmas CTA created");
+    customButton = btn;
+    return btn;
+  }
+  
+  function showCustomButton() {
+    if (!customButton) {
+      customButton = createCustomButton();
+      document.body.appendChild(customButton);
+      console.log("✅ Custom button created and added");
+    }
+    
+    customButton.classList.remove('hidden-state');
+    customButton.style.display = "inline-flex";
+    
+    var textSpan = customButton.querySelector("#chat-text-content");
+    if (textSpan && !chatIsOpen) {
+      startCarousel(textSpan);
+    }
+    
+    forceHideStandardButtons();
   }
  
-  function hideCustomCTA() {
-    var btn = document.getElementById("leap-chat-cta");
-    if (btn) {
-      btn.style.display = "none";
+  function hideCustomButton() {
+    if (customButton) {
+      customButton.classList.add('hidden-state');
       stopCarousel();
+      console.log("Custom button hidden (chat opened)");
     }
   }
  
-  // Event listeners
-  window.addEventListener("onEmbeddedMessagingButtonCreated", function () {
-    console.log("Button created event");
-    var es = window.embeddedservice_bootstrap;
-    hideStandardButton(es);
-    showCustomCTA(es);
+  // Listen to ALL Salesforce Embedded Messaging events
+  var salesforceEvents = [
+    "onEmbeddedMessagingReady",
+    "onEmbeddedMessagingButtonCreated",
+    "onEmbeddedMessagingWindowMaximized",
+    "onEmbeddedMessagingWindowMinimized",
+    "onEmbeddedMessagingConversationOpen",
+    "onEmbeddedMessagingNewMessage",
+    "onEmbeddedMessagingSessionStart",
+    "onEmbeddedMessagingSessionEnd"
+  ];
+  
+  salesforceEvents.forEach(function(eventName) {
+    window.addEventListener(eventName, function(event) {
+      console.log("📢 Event:", eventName);
+      forceHideStandardButtons();
+      
+      if (eventName === "onEmbeddedMessagingWindowMaximized") {
+        chatIsOpen = true;
+        hideCustomButton();
+      } else if (eventName === "onEmbeddedMessagingWindowMinimized") {
+        chatIsOpen = false;
+        showCustomButton();
+      } else if (eventName === "onEmbeddedMessagingButtonCreated" || 
+                 eventName === "onEmbeddedMessagingReady") {
+        if (!chatIsOpen) {
+          showCustomButton();
+        }
+      }
+    });
   });
  
-  window.addEventListener("onEmbeddedMessagingWindowMaximized", hideCustomCTA);
- 
-  window.addEventListener("onEmbeddedMessagingWindowMinimized", function () {
-    var es = window.embeddedservice_bootstrap;
-    hideStandardButton(es);
-    showCustomCTA(es);
-  });
- 
-  // Optimized initialization - reduced wait time
+  // Initialize custom button
   function initCustomButton() {
     var es = window.embeddedservice_bootstrap;
-    if (es && es.utilAPI) {
-      console.log("utilAPI ready");
-      hideStandardButton(es);
-      showCustomCTA(es);
+    if (es) {
+      console.log("✅ Salesforce service ready");
+      forceHideStandardButtons();
+      showCustomButton();
       return true;
     }
     return false;
   }
   
-  // Try immediately
+  // Try immediately and keep retrying
   if (!initCustomButton()) {
-    // Retry with optimized timing
     var attempts = 0;
+    var maxAttempts = 30;
     var checkInterval = setInterval(function() {
-      if (initCustomButton() || ++attempts > 20) {
+      attempts++;
+      if (initCustomButton()) {
         clearInterval(checkInterval);
+        console.log("✅ Initialized after", attempts, "attempts");
+      } else if (attempts >= maxAttempts) {
+        clearInterval(checkInterval);
+        // Still create button even if Salesforce not ready
+        showCustomButton();
+        console.log("⚠️ Created button without Salesforce ready");
       }
     }, 100);
   }
   
-  // Lightweight observer for standard button
+  // Continuous observer to catch and hide standard buttons
   var observer = new MutationObserver(function(mutations) {
+    var needsHiding = false;
+    
     for (var i = 0; i < mutations.length; i++) {
       var nodes = mutations[i].addedNodes;
       for (var j = 0; j < nodes.length; j++) {
         var node = nodes[j];
-        if (node.nodeType === 1 && node.classList) {
-          var isStandardBtn = node.classList.contains('embeddedMessagingConversationButton') ||
-                              node.classList.contains('embeddedServiceHelpButton') ||
-                              node.classList.contains('helpButtonEnabled');
-          if (isStandardBtn) {
-            hideStandardButton(window.embeddedservice_bootstrap);
-            break;
+        if (node.nodeType === 1 && node.id !== 'leap-chat-cta') {
+          if (node.classList) {
+            var isStandardBtn = 
+              node.classList.contains('embeddedMessagingConversationButton') ||
+              node.classList.contains('embeddedServiceHelpButton') ||
+              node.classList.contains('helpButtonEnabled') ||
+              (node.tagName === 'BUTTON' && node.getAttribute('aria-label') && 
+               node.getAttribute('aria-label').toLowerCase().includes('chat'));
+            
+            if (isStandardBtn) {
+              needsHiding = true;
+              break;
+            }
           }
         }
       }
     }
+    
+    if (needsHiding) {
+      console.log("🚫 Standard button detected, hiding it");
+      forceHideStandardButtons();
+    }
   });
   
-  observer.observe(document.body, { childList: true, subtree: true });
+  observer.observe(document.body, { 
+    childList: true, 
+    subtree: true,
+    attributes: true,
+    attributeFilter: ['style', 'class']
+  });
+  
+  // Periodic check to ensure custom button stays visible (unless chat is open)
+  setInterval(function() {
+    if (!chatIsOpen && customButton) {
+      var computedStyle = window.getComputedStyle(customButton);
+      if (computedStyle.display === 'none' || computedStyle.visibility === 'hidden') {
+        console.log("⚠️ Custom button was hidden, restoring it");
+        showCustomButton();
+      }
+    }
+    forceHideStandardButtons();
+  }, 1000);
+  
+  console.log("✅ Christmas chat initialization complete");
 })();
   </script>
   <script type='text/javascript'
