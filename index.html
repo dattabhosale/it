@@ -115,311 +115,150 @@
       }
     };
 	(function () {
-  console.log("Christmas Chat Button Initialized");
+  console.log("Persistent Christmas Button");
  
-  // Christmas icon carousel - rotating festive symbols
-  const christmasIcons = ['🎄', '🎅', '⛄', '🎁', '❄️', '🔔', '⭐', '🤶', '🦌', '🎀'];
-  let currentIconIndex = 0;
-  let iconInterval = null;
-  let buttonObserver = null;
-  function hideStandardButton(es) {
-    if (es && es.utilAPI && typeof es.utilAPI.hideChatButton === "function") {
-      try {
-        es.utilAPI.hideChatButton();
-      } catch (e) {
-        console.warn("Error calling hideChatButton()", e);
-      }
-    }
+  const messages = [
+    "Chat with us!",
+    "Need Help?",
+    "Talk to us!",
+    "Get Support!",
+    "We're here!"
+  ];
+  
+  let currentIndex = 0;
+  let carouselTimer = null;
+  let keepAliveTimer = null;
+  let chatIsOpen = false;
+  function ensureButtonExists() {
+    // Don't show button if chat is open
+    if (chatIsOpen) return;
     
-    // Hide Salesforce buttons by selector
-    try {
-      const selectors = [
-        '[id*="embedded-messaging"]:not(#xmas-chat-btn)',
-        '[class*="embeddedMessaging"]:not(#xmas-chat-btn)',
-        '[class*="slds-chat"]:not(#xmas-chat-btn)',
-        '[class*="embeddedServiceHelpButton"]:not(#xmas-chat-btn)'
-      ];
-      
-      selectors.forEach(selector => {
-        try {
-          document.querySelectorAll(selector).forEach(el => {
-            if (el.id !== "xmas-chat-btn" && el.id !== "xmas-chat-styles") {
-              el.style.cssText = "display: none !important; visibility: hidden !important; opacity: 0 !important;";
-            }
-          });
-        } catch (e) {}
-      });
-    } catch (e) {
-      console.warn("Error hiding buttons", e);
-    }
-  }
-  function startIconCarousel(btn) {
-    if (iconInterval) clearInterval(iconInterval);
+    let btn = document.getElementById("xmas-btn");
     
-    iconInterval = setInterval(() => {
-      const icon = btn.querySelector('.chat-icon');
-      if (!icon) return; // Safety check
-      
-      // Fade out
-      icon.style.opacity = "0";
-      icon.style.transform = "scale(0.5) rotate(180deg)";
-      
-      setTimeout(() => {
-        currentIconIndex = (currentIconIndex + 1) % christmasIcons.length;
-        icon.textContent = christmasIcons[currentIconIndex];
-        
-        // Fade in
-        icon.style.opacity = "1";
-        icon.style.transform = "scale(1) rotate(0deg)";
-      }, 300);
-    }, 3000); // Change icon every 3 seconds
-  }
-  function stopIconCarousel() {
-    if (iconInterval) {
-      clearInterval(iconInterval);
-      iconInterval = null;
-    }
-  }
-  function startButtonObserver(es) {
-    if (buttonObserver) buttonObserver.disconnect();
-    let throttle = null;
-    buttonObserver = new MutationObserver(() => {
-      if (!throttle) {
-        throttle = setTimeout(() => {
-          const customBtn = document.getElementById("xmas-chat-btn");
-          if (customBtn && customBtn.style.display !== "none") {
-            hideStandardButton(es);
-          }
-          throttle = null;
-        }, 150);
-      }
-    });
-    buttonObserver.observe(document.body, {
-      childList: true,
-      subtree: true,
-      attributes: true,
-      attributeFilter: ['style', 'class', 'display']
-    });
-  }
-  function stopButtonObserver() {
-    if (buttonObserver) {
-      buttonObserver.disconnect();
-      buttonObserver = null;
-    }
-  }
- 
-  function showCustomButton(es) {
-    console.log("showCustomButton called", es ? "with ES" : "without ES");
-    
-    if (!es || !es.utilAPI) {
-      console.warn("ES or utilAPI not available yet");
-      // Still try to show button even without ES
-    }
- 
-    let existing = document.getElementById("xmas-chat-btn");
-    if (existing) {
-      existing.style.display = "flex";
-      console.log("Showing existing button");
-      if (es) hideStandardButton(es);
-      startIconCarousel(existing);
-      if (es) startButtonObserver(es);
+    // If button exists and is visible, we're good
+    if (btn && btn.style.display !== "none") {
       return;
     }
- 
-    console.log("Creating new Christmas button");
     
-    // Create button container
-    const btn = document.createElement("button");
-    btn.id = "xmas-chat-btn";
-    btn.innerHTML = `
-      <span class="chat-icon">${christmasIcons[0]}</span>
-      <span class="chat-text">Chat with us!</span>
-    `;
- 
-    // Styling
-    Object.assign(btn.style, {
-      position: "fixed",
-      right: "20px",
-      bottom: "20px",
-      zIndex: "999999",
-      minWidth: "220px",
-      minHeight: "85px",
-      padding: "0",
-      border: "4px solid #FFD700",
-      borderRadius: "50px",
-      cursor: "pointer",
-      display: "flex",
-      flexDirection: "column",
-      alignItems: "center",
-      justifyContent: "center",
-      gap: "8px",
-      background: "linear-gradient(135deg, #dc2626 0%, #16a34a 50%, #dc2626 100%)",
-      backgroundSize: "200% 200%",
-      boxShadow: "0 12px 35px rgba(220, 38, 38, 0.6), 0 0 25px rgba(34, 197, 94, 0.4)",
-      transition: "all 0.3s ease",
-      fontFamily: "'Segoe UI', Tahoma, Geneva, Verdana, sans-serif",
-      outline: "none",
-      visibility: "visible",
-      opacity: "1"
-    });
-    // Add styles
-    if (!document.getElementById("xmas-chat-styles")) {
-      const style = document.createElement("style");
-      style.id = "xmas-chat-styles";
-      style.textContent = `
-        @keyframes xmasGlow {
-          0%, 100% {
-            box-shadow: 0 12px 35px rgba(220, 38, 38, 0.6), 0 0 25px rgba(34, 197, 94, 0.4);
-            transform: scale(1);
-          }
-          50% {
-            box-shadow: 0 18px 45px rgba(220, 38, 38, 0.8), 0 0 35px rgba(34, 197, 94, 0.6), 0 0 0 12px rgba(255, 215, 0, 0.25);
-            transform: scale(1.03);
-          }
-        }
-        
-        @keyframes bgShift {
-          0% { background-position: 0% 50%; }
-          50% { background-position: 100% 50%; }
-          100% { background-position: 0% 50%; }
-        }
-        
-        @keyframes slideInBounce {
-          0% {
-            transform: translateX(200%) rotate(20deg);
-            opacity: 0;
-          }
-          60% {
-            transform: translateX(-10px) rotate(-5deg);
-            opacity: 1;
-          }
-          80% {
-            transform: translateX(5px) rotate(2deg);
-          }
-          100% {
-            transform: translateX(0) rotate(0deg);
-            opacity: 1;
-          }
-        }
-        
-        @keyframes jingleBell {
-          0%, 100% { transform: rotate(0deg); }
-          10%, 30% { transform: rotate(-8deg); }
-          20%, 40% { transform: rotate(8deg); }
-          50% { transform: rotate(0deg); }
-        }
-        
-        @keyframes snowfall {
-          0% { transform: translateY(-5px); opacity: 0.8; }
-          50% { transform: translateY(5px); opacity: 1; }
-          100% { transform: translateY(-5px); opacity: 0.8; }
-        }
-        
-        #xmas-chat-btn {
-          animation: slideInBounce 0.8s cubic-bezier(0.68, -0.55, 0.265, 1.55), 
-                     xmasGlow 3s ease-in-out 0.8s infinite, 
-                     bgShift 8s ease 0.8s infinite;
-        }
-        
-        #xmas-chat-btn .chat-icon {
-          font-size: 42px;
-          line-height: 1;
-          transition: all 0.3s ease;
-          animation: snowfall 2s ease-in-out infinite;
-        }
-        
-        #xmas-chat-btn .chat-text {
-          color: #ffffff;
-          font-size: 16px;
-          font-weight: 700;
-          text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
-          letter-spacing: 0.5px;
-        }
-        
-        #xmas-chat-btn:hover {
-          transform: scale(1.1) translateY(-5px) !important;
-          box-shadow: 0 20px 50px rgba(220, 38, 38, 0.8), 0 0 40px rgba(34, 197, 94, 0.7) !important;
-          animation: jingleBell 0.6s ease, xmasGlow 3s ease-in-out infinite, bgShift 8s ease infinite !important;
-        }
-        
-        #xmas-chat-btn:hover .chat-icon {
-          transform: scale(1.2) rotate(360deg);
-          animation: none;
-        }
-        
-        #xmas-chat-btn:active {
-          transform: scale(0.95) !important;
-        }
-      `;
-      document.head.appendChild(style);
-    }
- 
-    btn.addEventListener("click", () => {
-      stopIconCarousel();
-      if (typeof es.utilAPI.launchChat === "function") {
-        es.utilAPI.launchChat()
-          .then(() => console.log("Chat launched"))
-          .catch(err => console.error("Error launching chat", err));
-      }
-    });
- 
-    document.body.appendChild(btn);
-    hideStandardButton(es);
-    startIconCarousel(btn);
-    startButtonObserver(es);
-    console.log("Christmas chat button created");
-  }
- 
-  function hideCustomButton() {
-    const btn = document.getElementById("xmas-chat-btn");
+    // If button exists but hidden, show it
     if (btn) {
-      btn.style.display = "none";
-      stopIconCarousel();
-      stopButtonObserver();
+      console.log("Button exists but hidden, showing it");
+      btn.style.display = "block";
+      btn.style.visibility = "visible";
+      btn.style.opacity = "1";
+      return;
     }
-  }
- 
-  window.addEventListener("onEmbeddedMessagingButtonCreated", () => {
-    const es = window.embeddedservice_bootstrap;
-    if (es) showCustomButton(es);
-  });
- 
-  window.addEventListener("onEmbeddedMessagingWindowMaximized", () => {
-    hideCustomButton();
-  });
- 
-  window.addEventListener("onEmbeddedMessagingWindowMinimized", () => {
-    const es = window.embeddedservice_bootstrap;
-    if (es) {
-      hideStandardButton(es);
-      showCustomButton(es);
-    }
-  });
- 
-  function waitForES(attempts, interval) {
-    let count = 0;
-    (function check() {
-      count++;
-      const es = window.embeddedservice_bootstrap;
-      if (es && es.utilAPI) {
-        showCustomButton(es);
-        return;
+    
+    // Create new button
+    console.log("Creating new button");
+    
+    btn = document.createElement("button");
+    btn.id = "xmas-btn";
+    btn.textContent = messages[currentIndex];
+    
+    // Inline styles with !important to prevent overrides
+    btn.setAttribute("style", `
+      position: fixed !important;
+      right: 20px !important;
+      bottom: 20px !important;
+      z-index: 999999 !important;
+      min-width: 200px !important;
+      min-height: 70px !important;
+      padding: 15px 25px !important;
+      font-size: 18px !important;
+      font-weight: bold !important;
+      color: white !important;
+      background: linear-gradient(135deg, #dc2626, #16a34a) !important;
+      border: 3px solid gold !important;
+      border-radius: 40px !important;
+      cursor: pointer !important;
+      box-shadow: 0 10px 30px rgba(0,0,0,0.3) !important;
+      transition: all 0.3s ease !important;
+      font-family: Arial, sans-serif !important;
+      display: block !important;
+      visibility: visible !important;
+      opacity: 1 !important;
+    `);
+    
+    // Hover effects
+    btn.addEventListener("mouseenter", function() {
+      this.style.transform = "scale(1.1)";
+    });
+    
+    btn.addEventListener("mouseleave", function() {
+      this.style.transform = "scale(1)";
+    });
+    
+    // Click handler
+    btn.addEventListener("click", function() {
+      console.log("Button clicked");
+      chatIsOpen = true;
+      if (window.embeddedservice_bootstrap && 
+          window.embeddedservice_bootstrap.utilAPI && 
+          window.embeddedservice_bootstrap.utilAPI.launchChat) {
+        window.embeddedservice_bootstrap.utilAPI.launchChat();
       }
-      if (count >= attempts) return;
-      setTimeout(check, interval);
-    })();
+    });
+    
+    document.body.appendChild(btn);
+    console.log("Button created and added");
   }
- 
-  if (document.readyState === "complete" || document.readyState === "interactive") {
-    waitForES(50, 200);
-  } else {
-    window.addEventListener("DOMContentLoaded", () => waitForES(50, 200));
+  function updateCarousel() {
+    const btn = document.getElementById("xmas-btn");
+    if (!btn || chatIsOpen) return;
+    
+    // Fade effect
+    btn.style.opacity = "0.5";
+    
+    setTimeout(function() {
+      currentIndex = (currentIndex + 1) % messages.length;
+      btn.textContent = messages[currentIndex];
+      btn.style.opacity = "1";
+    }, 200);
   }
+  function startCarousel() {
+    if (carouselTimer) clearInterval(carouselTimer);
+    carouselTimer = setInterval(updateCarousel, 2500);
+    console.log("Carousel started");
+  }
+  function startKeepAlive() {
+    if (keepAliveTimer) clearInterval(keepAliveTimer);
+    // Check every 500ms if button still exists
+    keepAliveTimer = setInterval(ensureButtonExists, 500);
+    console.log("Keep-alive started");
+  }
+  // Event listeners
+  window.addEventListener("onEmbeddedMessagingWindowMaximized", function() {
+    console.log("Chat opened");
+    chatIsOpen = true;
+    const btn = document.getElementById("xmas-btn");
+    if (btn) btn.style.display = "none";
+  });
+  window.addEventListener("onEmbeddedMessagingWindowMinimized", function() {
+    console.log("Chat closed");
+    chatIsOpen = false;
+    ensureButtonExists();
+  });
+  // Initialize
+  function init() {
+    console.log("Initializing button system");
+    ensureButtonExists();
+    startCarousel();
+    startKeepAlive();
+  }
+  // Start immediately
+  init();
+  
+  // Also start after delays
+  setTimeout(init, 1000);
+  setTimeout(init, 2000);
+  
 })();
   </script>
   <script type='text/javascript'
     src='https://leapmotor--dev01.sandbox.my.site.com/ESWLPMLeapmotor1760706603231/assets/js/bootstrap.min.js'
     onload='initEmbeddedMessaging()'></script>
+
 	
 </body>
 
