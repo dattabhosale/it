@@ -348,13 +348,44 @@
     console.log("✅ Simple button created and added to page");
   }
  
+  function hideButton() {
+    var container = document.getElementById('christmas-chat-container');
+    if (container) {
+      container.style.display = 'none';
+      console.log("✅ Custom button hidden (chat opened)");
+    }
+  }
+  
+  function showButton() {
+    var container = document.getElementById('christmas-chat-container');
+    if (container) {
+      container.style.display = 'block';
+      console.log("✅ Custom button shown (chat closed)");
+    }
+  }
+  
+  // Listen to Salesforce chat events
+  window.addEventListener("onEmbeddedMessagingReady", function() {
+    console.log("📢 Salesforce Messaging Ready");
+  });
+  
+  window.addEventListener("onEmbeddedMessagingWindowMaximized", function() {
+    console.log("📢 Chat window opened - hiding custom button");
+    hideButton();
+  });
+  
+  window.addEventListener("onEmbeddedMessagingWindowMinimized", function() {
+    console.log("📢 Chat window closed - showing custom button");
+    showButton();
+  });
+ 
   // Create button immediately
   setTimeout(function() {
     console.log("Initializing button...");
     createSimpleButton();
   }, 1000);
   
-  // Ensure button stays visible
+  // Ensure button stays visible (unless chat is open)
   setInterval(function() {
     var container = document.getElementById('christmas-chat-container');
     if (!container) {
@@ -369,6 +400,7 @@
 <script type='text/javascript'
   src='https://leapmotor--dev01.sandbox.my.site.com/ESWLPMLeapmotor1760706603231/assets/js/bootstrap.min.js'
   onload='initEmbeddedMessaging()'></script>
+
 </body>
 
 </html>
