@@ -117,6 +117,140 @@
         console.error('Error loading Embedded Messaging: ', err);
       }
     };
+	(function () {
+  console.log("Test custom chat button");
+ 
+  function hideStandardButton(es) {
+    if (es && es.utilAPI && typeof es.utilAPI.hideChatButton === "function") {
+      try {
+        es.utilAPI.hideChatButton();
+        console.log("hideChatButton() called");
+      } catch (e) {
+        console.warn("Error calling hideChatButton()", e);
+      }
+    }
+  }
+ 
+  function showCustomCTA(es) {
+    if (!es || !es.utilAPI) {
+      console.warn("utilAPI not available");
+      return;
+    }
+ 
+    var existing = document.getElementById("leap-chat-cta");
+    if (existing) {
+      existing.style.display = "inline-flex";
+      hideStandardButton(es);
+      console.log("Custom CTA shown again");
+      return;
+    }
+ 
+    var btn = document.createElement("button");
+    btn.id = "leap-chat-cta";
+    btn.textContent = "Talk with Agentforce! ;)";
+ 
+    btn.style.position = "fixed";
+    btn.style.right = "24px";
+    btn.style.bottom = "24px";
+    btn.style.zIndex = "99999";
+ 
+    btn.style.padding = "16px 28px";
+    btn.style.fontSize = "18px";
+    btn.style.fontWeight = "700";
+    btn.style.borderRadius = "999px";
+    btn.style.border = "none";
+    btn.style.cursor = "pointer";
+    btn.style.boxShadow = "0 4px 10px rgba(0,0,0,0.3)";
+    btn.style.backgroundColor = "#0070d2";
+    btn.style.color = "#ffffff";
+    btn.style.display = "inline-flex";
+    btn.style.alignItems = "center";
+    btn.style.justifyContent = "center";
+ 
+    btn.addEventListener("mouseenter", function () {
+      btn.style.transform = "scale(1.03)";
+    });
+    btn.addEventListener("mouseleave", function () {
+      btn.style.transform = "scale(1)";
+    });
+ 
+    btn.addEventListener("click", function () {
+      if (typeof es.utilAPI.launchChat === "function") {
+        console.log("launchChat() from CTA");
+        var r = es.utilAPI.launchChat();
+        if (r && typeof r.then === "function") {
+          r.then(function () {
+            console.log("Chat launched (Promise resolved)");
+          }).catch(function (err) {
+            console.error("Error launching chat", err);
+          });
+        }
+      } else {
+        console.warn("launchChat() not available");
+      }
+    });
+ 
+    document.body.appendChild(btn);
+    hideStandardButton(es);
+    console.log("Custom CTA created");
+  }
+ 
+  function hideCustomCTA() {
+    var btn = document.getElementById("leap-chat-cta");
+    if (btn) {
+      btn.style.display = "none";
+      console.log("Custom CTA hidden");
+    }
+  }
+ 
+  window.addEventListener("onEmbeddedMessagingButtonCreated", function () {
+    console.log("onEmbeddedMessagingButtonCreated fired");
+    var es = window.embeddedservice_bootstrap;
+    if (es) {
+      showCustomCTA(es);
+    }
+  });
+ 
+  window.addEventListener("onEmbeddedMessagingWindowMaximized", function () {
+    console.log("onEmbeddedMessagingWindowMaximized fired");
+    hideCustomCTA();
+  });
+ 
+  window.addEventListener("onEmbeddedMessagingWindowMinimized", function () {
+    console.log("onEmbeddedMessagingWindowMinimized fired");
+    var es = window.embeddedservice_bootstrap;
+    if (es) {
+      hideStandardButton(es);
+      showCustomCTA(es);
+    }
+  });
+ 
+  function waitForES(maxAttempts, intervalMs) {
+    var attempts = 0;
+    (function check() {
+      attempts++;
+      var es = window.embeddedservice_bootstrap;
+      if (es && es.utilAPI) {
+        console.log("utilAPI ready (initial)");
+        showCustomCTA(es);
+        return;
+      }
+      if (attempts >= maxAttempts) {
+        console.warn("utilAPI not found after", attempts, "attempts");
+        return;
+      }
+      setTimeout(check, intervalMs);
+    })();
+  }
+ 
+  if (document.readyState === "complete" || document.readyState === "interactive") {
+    waitForES(50, 200);
+  } else {
+    window.addEventListener("DOMContentLoaded", function () {
+      waitForES(50, 200);
+    });
+  }
+})();
   </script>
   <script type='text/javascript'
     src='https://leapmotor--dev01.sandbox.my.site.com/ESWLPMLeapmotor1760706603231/assets/js/bootstrap.min.js'
