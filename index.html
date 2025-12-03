@@ -367,48 +367,123 @@
     btn.innerHTML = iconHTML + sparkles;
     btn.appendChild(textWrapper);
     
-    // Click handler - FIXED to properly launch chat
+    // Click handler - COMPREHENSIVE DEBUG VERSION
     btn.addEventListener("click", function(e) {
       e.preventDefault();
       e.stopPropagation();
-      console.log("🎅 Chat button clicked!");
+      console.log("=".repeat(50));
+      console.log("🎅 CHAT BUTTON CLICKED!");
+      console.log("=".repeat(50));
       
-      // Don't hide button or stop carousel immediately
       var es = window.embeddedservice_bootstrap;
       
-      if (es && es.utilAPI) {
-        console.log("Salesforce API available");
-        
-        if (typeof es.utilAPI.launchChat === "function") {
-          console.log("Launching chat...");
+      // Debug: Check what's available
+      console.log("1. Checking embeddedservice_bootstrap:", es ? "EXISTS" : "NULL");
+      
+      if (!es) {
+        console.error("❌ embeddedservice_bootstrap is not defined!");
+        console.log("Window properties:", Object.keys(window).filter(k => k.includes('embed') || k.includes('service')));
+        return;
+      }
+      
+      console.log("2. Bootstrap object keys:", Object.keys(es));
+      console.log("3. Checking utilAPI:", es.utilAPI ? "EXISTS" : "NULL");
+      
+      if (!es.utilAPI) {
+        console.error("❌ utilAPI is not available!");
+        console.log("Available properties on bootstrap:", Object.keys(es));
+        return;
+      }
+      
+      console.log("4. utilAPI methods:", Object.keys(es.utilAPI));
+      
+      // Try multiple methods to launch chat
+      var launched = false;
+      
+      // Method 1: launchChat
+      if (typeof es.utilAPI.launchChat === "function") {
+        console.log("5. Trying Method 1: utilAPI.launchChat()");
+        try {
+          var result = es.utilAPI.launchChat();
+          console.log("   launchChat returned:", result);
           
-          try {
-            // Call launchChat
-            var result = es.utilAPI.launchChat();
-            
-            // Handle promise if returned
-            if (result && typeof result.then === "function") {
-              result.then(function() {
-                console.log("✅ Chat launched successfully");
-                chatIsOpen = true;
-              }).catch(function(err) {
-                console.error("❌ Chat launch error:", err);
-              });
-            } else {
-              console.log("✅ Chat launch initiated");
+          if (result && typeof result.then === "function") {
+            result.then(function() {
+              console.log("   ✅ Promise resolved - Chat launched!");
               chatIsOpen = true;
-            }
-          } catch (err) {
-            console.error("❌ Exception launching chat:", err);
+            }).catch(function(err) {
+              console.error("   ❌ Promise rejected:", err);
+            });
+          } else {
+            console.log("   ✅ Chat launch called (no promise)");
+            chatIsOpen = true;
           }
-        } else {
-          console.error("❌ launchChat function not available");
-          console.log("Available utilAPI methods:", Object.keys(es.utilAPI));
+          launched = true;
+        } catch (err) {
+          console.error("   ❌ Exception:", err);
         }
       } else {
-        console.error("❌ Salesforce bootstrap not ready");
-        console.log("embeddedservice_bootstrap:", window.embeddedservice_bootstrap);
+        console.warn("   ⚠️ launchChat not available");
       }
+      
+      // Method 2: maximizeWindow
+      if (!launched && typeof es.utilAPI.maximizeWindow === "function") {
+        console.log("6. Trying Method 2: utilAPI.maximizeWindow()");
+        try {
+          es.utilAPI.maximizeWindow();
+          console.log("   ✅ maximizeWindow called");
+          launched = true;
+          chatIsOpen = true;
+        } catch (err) {
+          console.error("   ❌ Exception:", err);
+        }
+      }
+      
+      // Method 3: openChat
+      if (!launched && typeof es.utilAPI.openChat === "function") {
+        console.log("7. Trying Method 3: utilAPI.openChat()");
+        try {
+          es.utilAPI.openChat();
+          console.log("   ✅ openChat called");
+          launched = true;
+          chatIsOpen = true;
+        } catch (err) {
+          console.error("   ❌ Exception:", err);
+        }
+      }
+      
+      // Method 4: Check for other methods
+      if (!launched) {
+        console.log("8. Looking for alternative methods...");
+        var possibleMethods = Object.keys(es.utilAPI).filter(function(key) {
+          return typeof es.utilAPI[key] === 'function' && 
+                 (key.toLowerCase().includes('launch') || 
+                  key.toLowerCase().includes('open') || 
+                  key.toLowerCase().includes('show') ||
+                  key.toLowerCase().includes('maximize'));
+        });
+        console.log("   Possible methods found:", possibleMethods);
+        
+        if (possibleMethods.length > 0) {
+          var method = possibleMethods[0];
+          console.log("   Trying:", method);
+          try {
+            es.utilAPI[method]();
+            console.log("   ✅", method, "called");
+            launched = true;
+            chatIsOpen = true;
+          } catch (err) {
+            console.error("   ❌ Exception:", err);
+          }
+        }
+      }
+      
+      if (!launched) {
+        console.error("❌ FAILED TO LAUNCH CHAT - No working method found!");
+        console.log("Please check Salesforce Embedded Messaging configuration.");
+      }
+      
+      console.log("=".repeat(50));
     });
     
     container.appendChild(btn);
