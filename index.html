@@ -91,7 +91,7 @@
     function initEmbeddedMessaging() {
       try {
         embeddedservice_bootstrap.settings.language = 'es';
-        embeddedservice_bootstrap.settings.displayHelpButton = true; // Changed to true - let standard button show
+        embeddedservice_bootstrap.settings.displayHelpButton = false; // Disable standard button
         embeddedservice_bootstrap.settings.defaultMinimizedText = "Chat with Leappy";
         embeddedservice_bootstrap.settings.disabledMinimizedText = "Leappy Offline";
         
@@ -124,10 +124,25 @@
     var style = document.createElement("style");
     style.id = "christmas-chat-simple-styles";
     style.textContent = `
-      /* Only hide standard button with minimal CSS */
+      /* Hide standard button in ALL states - comprehensive */
       .embeddedMessagingConversationButton,
-      .embeddedServiceHelpButton {
+      .embeddedServiceHelpButton,
+      .embeddedServiceSidebar,
+      .helpButtonEnabled,
+      .uiButton,
+      button[aria-label*="Chat"]:not(#christmas-chat-btn),
+      button[class*="embeddedMessaging"]:not(#christmas-chat-btn),
+      button[class*="embeddedService"]:not(#christmas-chat-btn),
+      div[class*="embeddedMessagingConversationButton"],
+      div[class*="embeddedServiceHelpButton"],
+      iframe[class*="embeddedMessaging"]:not([title*="Chat Window"]) {
         display: none !important;
+        visibility: hidden !important;
+        opacity: 0 !important;
+        pointer-events: none !important;
+        position: absolute !important;
+        left: -99999px !important;
+        top: -99999px !important;
       }
       
       /* Custom button container - ALWAYS VISIBLE */
@@ -198,8 +213,40 @@
       }
     `;
     document.head.appendChild(style);
-    console.log("✅ Minimal CSS loaded");
+    console.log("✅ Comprehensive CSS loaded");
   })();
+  // Function to aggressively hide standard buttons
+  function hideStandardButtons() {
+    try {
+      var es = window.embeddedservice_bootstrap;
+      if (es && es.utilAPI && typeof es.utilAPI.hideChatButton === "function") {
+        es.utilAPI.hideChatButton();
+      }
+    } catch (e) {}
+    
+    // Also hide via DOM
+    var selectors = [
+      '.embeddedMessagingConversationButton',
+      '.embeddedServiceHelpButton',
+      '.helpButtonEnabled',
+      'button[aria-label*="Chat"]',
+      'button[class*="embeddedMessaging"]',
+      'button[class*="embeddedService"]'
+    ];
+    
+    selectors.forEach(function(selector) {
+      try {
+        var elements = document.querySelectorAll(selector);
+        elements.forEach(function(el) {
+          if (el && el.id !== 'christmas-chat-btn' && el.id !== 'christmas-chat-container') {
+            el.style.display = 'none';
+            el.style.visibility = 'hidden';
+            el.style.opacity = '0';
+          }
+        });
+      } catch (e) {}
+    });
+  }
  
   function createSimpleButton() {
     // Check if already exists
@@ -367,32 +414,43 @@
   // Listen to Salesforce chat events
   window.addEventListener("onEmbeddedMessagingReady", function() {
     console.log("📢 Salesforce Messaging Ready");
+    hideStandardButtons();
+  });
+  
+  window.addEventListener("onEmbeddedMessagingButtonCreated", function() {
+    console.log("📢 Standard button created - hiding it");
+    hideStandardButtons();
   });
   
   window.addEventListener("onEmbeddedMessagingWindowMaximized", function() {
     console.log("📢 Chat window opened - hiding custom button");
     hideButton();
+    hideStandardButtons();
   });
   
   window.addEventListener("onEmbeddedMessagingWindowMinimized", function() {
     console.log("📢 Chat window closed - showing custom button");
     showButton();
+    hideStandardButtons();
   });
  
   // Create button immediately
   setTimeout(function() {
     console.log("Initializing button...");
     createSimpleButton();
+    hideStandardButtons();
   }, 1000);
   
-  // Ensure button stays visible (unless chat is open)
+  // Periodic checks - hide standard buttons and ensure custom button exists
   setInterval(function() {
+    hideStandardButtons();
+    
     var container = document.getElementById('christmas-chat-container');
     if (!container) {
       console.log("🔧 Button missing, recreating...");
       createSimpleButton();
     }
-  }, 3000);
+  }, 2000);
   
   console.log("✅ Simplified Christmas chat initialized!");
 })();
