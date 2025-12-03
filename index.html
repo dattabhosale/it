@@ -89,8 +89,7 @@
 <script type='text/javascript'>
     function initEmbeddedMessaging() {
       try {
-        embeddedservice_bootstrap.settings.language = 'es'; // For example, enter 'en' or 'en-US'
-        // Personalizzazione del pulsante
+        embeddedservice_bootstrap.settings.language = 'es';
         embeddedservice_bootstrap.settings.displayHelpButton = true;
         embeddedservice_bootstrap.settings.defaultMinimizedText = "Chat with Leappy";
         embeddedservice_bootstrap.settings.disabledMinimizedText = "Leappy Offline";
@@ -115,329 +114,291 @@
       }
     };
 	(function () {
-  console.log("Test custom chat button with carousel effect");
+  console.log("Christmas Chat Button Initialized");
  
-  // Christmas-themed carousel messages that will rotate
-  const carouselMessages = [
-    "🎄 Chat with us this Holiday Season!",
-    "🎅 Ho Ho Ho! Need Help?",
-    "⛄ Winter Wishes - Chat Now!",
-    "🎁 Gift yourself great support!",
-    "❄️ Let it Snow! Let's Chat!",
-    "🔔 Jingle All the Way to Support!",
-    "⭐ Merry Chatmas!"
-  ];
-  
-  let currentMessageIndex = 0;
-  let carouselInterval = null;
+  // Christmas icon carousel - rotating festive symbols
+  const christmasIcons = ['🎄', '🎅', '⛄', '🎁', '❄️', '🔔', '⭐', '🤶', '🦌', '🎀'];
+  let currentIconIndex = 0;
+  let iconInterval = null;
   let buttonObserver = null;
   function hideStandardButton(es) {
     if (es && es.utilAPI && typeof es.utilAPI.hideChatButton === "function") {
       try {
         es.utilAPI.hideChatButton();
-        console.log("hideChatButton() called");
       } catch (e) {
         console.warn("Error calling hideChatButton()", e);
       }
     }
     
-    // Also try to hide by finding and hiding the button element directly
-    // Be very specific to only target Salesforce buttons, not our custom button
+    // Hide Salesforce buttons by selector
     try {
-      // Target Salesforce-specific selectors
-      var salesforceSelectors = [
-        '[id*="embedded-messaging"]:not(#leap-chat-cta)',
-        '[class*="embeddedMessaging"]:not(#leap-chat-cta)',
-        '[class*="slds-chat"]:not(#leap-chat-cta)',
-        '[class*="embeddedServiceHelpButton"]:not(#leap-chat-cta)',
-        'button[class*="uiButton"][class*="helpButton"]:not(#leap-chat-cta)'
+      const selectors = [
+        '[id*="embedded-messaging"]:not(#xmas-chat-btn)',
+        '[class*="embeddedMessaging"]:not(#xmas-chat-btn)',
+        '[class*="slds-chat"]:not(#xmas-chat-btn)',
+        '[class*="embeddedServiceHelpButton"]:not(#xmas-chat-btn)'
       ];
       
-      salesforceSelectors.forEach(function(selector) {
+      selectors.forEach(selector => {
         try {
-          var elements = document.querySelectorAll(selector);
-          elements.forEach(function(btn) {
-            // Double-check it's not our custom button
-            if (btn.id !== "leap-chat-cta" && btn.id !== "chat-button-styles") {
-              btn.style.display = "none !important";
-              btn.style.visibility = "hidden !important";
-              btn.style.opacity = "0 !important";
-              btn.style.pointerEvents = "none !important";
+          document.querySelectorAll(selector).forEach(el => {
+            if (el.id !== "xmas-chat-btn" && el.id !== "xmas-chat-styles") {
+              el.style.cssText = "display: none !important; visibility: hidden !important; opacity: 0 !important;";
             }
           });
-        } catch (e) {
-          // Ignore selector errors
-        }
+        } catch (e) {}
       });
     } catch (e) {
-      console.warn("Error hiding button elements", e);
+      console.warn("Error hiding buttons", e);
+    }
+  }
+  function startIconCarousel(btn) {
+    if (iconInterval) clearInterval(iconInterval);
+    
+    iconInterval = setInterval(() => {
+      const icon = btn.querySelector('.chat-icon');
+      if (icon) {
+        icon.style.opacity = "0";
+        icon.style.transform = "scale(0.5) rotate(180deg)";
+        
+        setTimeout(() => {
+          currentIconIndex = (currentIconIndex + 1) % christmasIcons.length;
+          icon.textContent = christmasIcons[currentIconIndex];
+          icon.style.opacity = "1";
+          icon.style.transform = "scale(1) rotate(0deg)";
+        }, 200);
+      }
+    }, 2500);
+  }
+  function stopIconCarousel() {
+    if (iconInterval) {
+      clearInterval(iconInterval);
+      iconInterval = null;
     }
   }
   function startButtonObserver(es) {
-    // Stop existing observer if any
-    if (buttonObserver) {
-      buttonObserver.disconnect();
-    }
-    let throttleTimeout = null;
-    
-    // Create a MutationObserver to watch for standard button appearing
-    buttonObserver = new MutationObserver(function(mutations) {
-      // Throttle the hideStandardButton calls to avoid excessive execution
-      if (!throttleTimeout) {
-        throttleTimeout = setTimeout(function() {
-          // Make sure our custom button still exists and is visible
-          var customBtn = document.getElementById("leap-chat-cta");
-          if (customBtn) {
+    if (buttonObserver) buttonObserver.disconnect();
+    let throttle = null;
+    buttonObserver = new MutationObserver(() => {
+      if (!throttle) {
+        throttle = setTimeout(() => {
+          if (document.getElementById("xmas-chat-btn")) {
             hideStandardButton(es);
           }
-          throttleTimeout = null;
-        }, 100); // Wait 100ms between hide attempts
+          throttle = null;
+        }, 100);
       }
     });
-    // Start observing the document body for changes
     buttonObserver.observe(document.body, {
       childList: true,
       subtree: true,
       attributes: true,
       attributeFilter: ['style', 'class', 'display']
     });
-    
-    console.log("Button observer started");
   }
   function stopButtonObserver() {
     if (buttonObserver) {
       buttonObserver.disconnect();
       buttonObserver = null;
-      console.log("Button observer stopped");
-    }
-  }
-  function startCarousel(btn) {
-    // Clear any existing interval
-    if (carouselInterval) {
-      clearInterval(carouselInterval);
-    }
-    
-    // Start the carousel animation
-    carouselInterval = setInterval(() => {
-      // Fade out
-      btn.style.opacity = "0";
-      btn.style.transform = "scale(0.95) translateY(5px)";
-      
-      setTimeout(() => {
-        // Change message
-        currentMessageIndex = (currentMessageIndex + 1) % carouselMessages.length;
-        btn.textContent = carouselMessages[currentMessageIndex];
-        
-        // Fade in
-        btn.style.opacity = "1";
-        btn.style.transform = "scale(1) translateY(0)";
-      }, 300);
-    }, 3500); // Change message every 3.5 seconds
-  }
-  function stopCarousel() {
-    if (carouselInterval) {
-      clearInterval(carouselInterval);
-      carouselInterval = null;
     }
   }
  
-  function showCustomCTA(es) {
-    if (!es || !es.utilAPI) {
-      console.warn("utilAPI not available");
-      return;
-    }
+  function showCustomButton(es) {
+    if (!es || !es.utilAPI) return;
  
-    var existing = document.getElementById("leap-chat-cta");
+    let existing = document.getElementById("xmas-chat-btn");
     if (existing) {
-      existing.style.display = "inline-flex";
+      existing.style.display = "flex";
       hideStandardButton(es);
-      startCarousel(existing);
-      startButtonObserver(es); // Start observing for standard button
-      console.log("Custom CTA shown again");
+      startIconCarousel(existing);
+      startButtonObserver(es);
       return;
     }
  
-    var btn = document.createElement("button");
-    btn.id = "leap-chat-cta";
-    btn.textContent = carouselMessages[0];
+    // Create button container
+    const btn = document.createElement("button");
+    btn.id = "xmas-chat-btn";
+    btn.innerHTML = `
+      <span class="chat-icon">${christmasIcons[0]}</span>
+      <span class="chat-text">Chat with us!</span>
+    `;
  
-    // Make button MUCH larger to cover standard button
-    btn.style.position = "fixed";
-    btn.style.right = "20px";
-    btn.style.bottom = "20px";
-    btn.style.zIndex = "999999"; // Higher z-index to ensure it's on top
- 
-    btn.style.minWidth = "200px";
-    btn.style.minHeight = "80px";
-    btn.style.padding = "20px 32px";
-    btn.style.fontSize = "18px";
-    btn.style.fontWeight = "700";
-    btn.style.borderRadius = "50px";
-    btn.style.border = "3px solid #FFD700"; // Gold border for Christmas
-    btn.style.cursor = "pointer";
-    btn.style.boxShadow = "0 10px 30px rgba(220, 38, 38, 0.5), 0 0 20px rgba(34, 197, 94, 0.3)";
-    btn.style.color = "#ffffff";
-    btn.style.display = "inline-flex";
-    btn.style.alignItems = "center";
-    btn.style.justifyContent = "center";
-    btn.style.transition = "all 0.3s cubic-bezier(0.4, 0, 0.2, 1)";
-    btn.style.opacity = "1";
-    btn.style.textAlign = "center";
-    btn.style.lineHeight = "1.4";
-    
-    // Christmas red and green gradient
-    btn.style.background = "linear-gradient(135deg, #dc2626 0%, #16a34a 50%, #dc2626 100%)";
-    btn.style.backgroundSize = "200% 200%";
-    
-    // Add pulse animation
-    btn.style.animation = "christmasGlow 3s ease-in-out infinite, backgroundShift 8s ease infinite";
-    // Add CSS animation keyframes with Christmas theme
-    if (!document.getElementById("chat-button-styles")) {
-      var style = document.createElement("style");
-      style.id = "chat-button-styles";
+    // Styling
+    Object.assign(btn.style, {
+      position: "fixed",
+      right: "20px",
+      bottom: "20px",
+      zIndex: "999999",
+      minWidth: "220px",
+      minHeight: "85px",
+      padding: "0",
+      border: "4px solid #FFD700",
+      borderRadius: "50px",
+      cursor: "pointer",
+      display: "flex",
+      flexDirection: "column",
+      alignItems: "center",
+      justifyContent: "center",
+      gap: "8px",
+      background: "linear-gradient(135deg, #dc2626 0%, #16a34a 50%, #dc2626 100%)",
+      backgroundSize: "200% 200%",
+      boxShadow: "0 12px 35px rgba(220, 38, 38, 0.6), 0 0 25px rgba(34, 197, 94, 0.4)",
+      transition: "all 0.3s ease",
+      fontFamily: "'Segoe UI', Tahoma, Geneva, Verdana, sans-serif",
+      outline: "none"
+    });
+    // Add styles
+    if (!document.getElementById("xmas-chat-styles")) {
+      const style = document.createElement("style");
+      style.id = "xmas-chat-styles";
       style.textContent = `
-        @keyframes christmasGlow {
+        @keyframes xmasGlow {
           0%, 100% {
-            box-shadow: 0 10px 30px rgba(220, 38, 38, 0.5), 0 0 20px rgba(34, 197, 94, 0.3);
+            box-shadow: 0 12px 35px rgba(220, 38, 38, 0.6), 0 0 25px rgba(34, 197, 94, 0.4);
             transform: scale(1);
           }
           50% {
-            box-shadow: 0 15px 40px rgba(220, 38, 38, 0.7), 0 0 30px rgba(34, 197, 94, 0.5), 0 0 0 10px rgba(255, 215, 0, 0.2);
-            transform: scale(1.02);
+            box-shadow: 0 18px 45px rgba(220, 38, 38, 0.8), 0 0 35px rgba(34, 197, 94, 0.6), 0 0 0 12px rgba(255, 215, 0, 0.25);
+            transform: scale(1.03);
           }
         }
         
-        @keyframes backgroundShift {
+        @keyframes bgShift {
+          0% { background-position: 0% 50%; }
+          50% { background-position: 100% 50%; }
+          100% { background-position: 0% 50%; }
+        }
+        
+        @keyframes slideInBounce {
           0% {
-            background-position: 0% 50%;
-          }
-          50% {
-            background-position: 100% 50%;
-          }
-          100% {
-            background-position: 0% 50%;
-          }
-        }
-        
-        @keyframes slideIn {
-          from {
-            transform: translateX(150%) rotate(10deg);
+            transform: translateX(200%) rotate(20deg);
             opacity: 0;
           }
-          to {
+          60% {
+            transform: translateX(-10px) rotate(-5deg);
+            opacity: 1;
+          }
+          80% {
+            transform: translateX(5px) rotate(2deg);
+          }
+          100% {
             transform: translateX(0) rotate(0deg);
             opacity: 1;
           }
         }
         
-        @keyframes jingleShake {
+        @keyframes jingleBell {
           0%, 100% { transform: rotate(0deg); }
-          10% { transform: rotate(-3deg); }
-          20% { transform: rotate(3deg); }
-          30% { transform: rotate(-3deg); }
-          40% { transform: rotate(3deg); }
+          10%, 30% { transform: rotate(-8deg); }
+          20%, 40% { transform: rotate(8deg); }
           50% { transform: rotate(0deg); }
+        }
+        
+        @keyframes snowfall {
+          0% { transform: translateY(-5px); opacity: 0.8; }
+          50% { transform: translateY(5px); opacity: 1; }
+          100% { transform: translateY(-5px); opacity: 0.8; }
+        }
+        
+        #xmas-chat-btn {
+          animation: slideInBounce 0.8s cubic-bezier(0.68, -0.55, 0.265, 1.55), 
+                     xmasGlow 3s ease-in-out 0.8s infinite, 
+                     bgShift 8s ease 0.8s infinite;
+        }
+        
+        #xmas-chat-btn .chat-icon {
+          font-size: 42px;
+          line-height: 1;
+          transition: all 0.3s ease;
+          animation: snowfall 2s ease-in-out infinite;
+        }
+        
+        #xmas-chat-btn .chat-text {
+          color: #ffffff;
+          font-size: 16px;
+          font-weight: 700;
+          text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+          letter-spacing: 0.5px;
+        }
+        
+        #xmas-chat-btn:hover {
+          transform: scale(1.1) translateY(-5px) !important;
+          box-shadow: 0 20px 50px rgba(220, 38, 38, 0.8), 0 0 40px rgba(34, 197, 94, 0.7) !important;
+          animation: jingleBell 0.6s ease, xmasGlow 3s ease-in-out infinite, bgShift 8s ease infinite !important;
+        }
+        
+        #xmas-chat-btn:hover .chat-icon {
+          transform: scale(1.2) rotate(360deg);
+          animation: none;
+        }
+        
+        #xmas-chat-btn:active {
+          transform: scale(0.95) !important;
         }
       `;
       document.head.appendChild(style);
     }
-    
-    // Add initial slide-in animation
-    btn.style.animation = "slideIn 0.6s ease-out, christmasGlow 3s ease-in-out 0.6s infinite, backgroundShift 8s ease 0.6s infinite";
  
-    btn.addEventListener("mouseenter", function () {
-      btn.style.transform = "scale(1.08) translateY(-3px)";
-      btn.style.boxShadow = "0 15px 40px rgba(220, 38, 38, 0.7), 0 0 30px rgba(34, 197, 94, 0.6)";
-      btn.style.animation = "jingleShake 0.5s ease, christmasGlow 3s ease-in-out infinite, backgroundShift 8s ease infinite";
-      stopCarousel();
-    });
-    btn.addEventListener("mouseleave", function () {
-      btn.style.transform = "scale(1) translateY(0)";
-      btn.style.boxShadow = "0 10px 30px rgba(220, 38, 38, 0.5), 0 0 20px rgba(34, 197, 94, 0.3)";
-      btn.style.animation = "christmasGlow 3s ease-in-out infinite, backgroundShift 8s ease infinite";
-      startCarousel(btn);
-    });
- 
-    btn.addEventListener("click", function () {
-      stopCarousel();
+    btn.addEventListener("click", () => {
+      stopIconCarousel();
       if (typeof es.utilAPI.launchChat === "function") {
-        console.log("launchChat() from CTA");
-        var r = es.utilAPI.launchChat();
-        if (r && typeof r.then === "function") {
-          r.then(function () {
-            console.log("Chat launched (Promise resolved)");
-          }).catch(function (err) {
-            console.error("Error launching chat", err);
-          });
-        }
-      } else {
-        console.warn("launchChat() not available");
+        es.utilAPI.launchChat()
+          .then(() => console.log("Chat launched"))
+          .catch(err => console.error("Error launching chat", err));
       }
     });
  
     document.body.appendChild(btn);
     hideStandardButton(es);
-    startCarousel(btn);
-    startButtonObserver(es); // Start observing for standard button
-    console.log("Custom CTA created with Christmas carousel effect");
+    startIconCarousel(btn);
+    startButtonObserver(es);
+    console.log("Christmas chat button created");
   }
  
-  function hideCustomCTA() {
-    var btn = document.getElementById("leap-chat-cta");
+  function hideCustomButton() {
+    const btn = document.getElementById("xmas-chat-btn");
     if (btn) {
       btn.style.display = "none";
-      stopCarousel();
-      stopButtonObserver(); // Stop observing when custom button is hidden
-      console.log("Custom CTA hidden");
+      stopIconCarousel();
+      stopButtonObserver();
     }
   }
  
-  window.addEventListener("onEmbeddedMessagingButtonCreated", function () {
-    console.log("onEmbeddedMessagingButtonCreated fired");
-    var es = window.embeddedservice_bootstrap;
-    if (es) {
-      showCustomCTA(es);
-    }
+  window.addEventListener("onEmbeddedMessagingButtonCreated", () => {
+    const es = window.embeddedservice_bootstrap;
+    if (es) showCustomButton(es);
   });
  
-  window.addEventListener("onEmbeddedMessagingWindowMaximized", function () {
-    console.log("onEmbeddedMessagingWindowMaximized fired");
-    hideCustomCTA();
+  window.addEventListener("onEmbeddedMessagingWindowMaximized", () => {
+    hideCustomButton();
   });
  
-  window.addEventListener("onEmbeddedMessagingWindowMinimized", function () {
-    console.log("onEmbeddedMessagingWindowMinimized fired");
-    var es = window.embeddedservice_bootstrap;
+  window.addEventListener("onEmbeddedMessagingWindowMinimized", () => {
+    const es = window.embeddedservice_bootstrap;
     if (es) {
       hideStandardButton(es);
-      showCustomCTA(es); // This will also start the observer
+      showCustomButton(es);
     }
   });
  
-  function waitForES(maxAttempts, intervalMs) {
-    var attempts = 0;
+  function waitForES(attempts, interval) {
+    let count = 0;
     (function check() {
-      attempts++;
-      var es = window.embeddedservice_bootstrap;
+      count++;
+      const es = window.embeddedservice_bootstrap;
       if (es && es.utilAPI) {
-        console.log("utilAPI ready (initial)");
-        showCustomCTA(es);
+        showCustomButton(es);
         return;
       }
-      if (attempts >= maxAttempts) {
-        console.warn("utilAPI not found after", attempts, "attempts");
-        return;
-      }
-      setTimeout(check, intervalMs);
+      if (count >= attempts) return;
+      setTimeout(check, interval);
     })();
   }
  
   if (document.readyState === "complete" || document.readyState === "interactive") {
     waitForES(50, 200);
   } else {
-    window.addEventListener("DOMContentLoaded", function () {
-      waitForES(50, 200);
-    });
+    window.addEventListener("DOMContentLoaded", () => waitForES(50, 200));
   }
 })();
   </script>
