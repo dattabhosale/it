@@ -83,13 +83,13 @@
     // Get localized message based on country
     function getLocalizedMessage(countryCode) {
       var messages = {
-        'it': 'Parla con Agentforce! 🎄',
-        'es': 'Habla con Agentforce! 🎄',
-        'fr': 'Parlez avec Agentforce! 🎄',
-        'de': 'Sprechen Sie mit Agentforce! 🎄',
-        'uk': 'Talk with Agentforce! 🎄',
-        'us': 'Talk with Agentforce! 🎄',
-        'en': 'Talk with Agentforce! 🎄'
+        'it': 'Parla con Agentforce!',
+        'es': 'Habla con Agentforce!',
+        'fr': 'Parlez avec Agentforce!',
+        'de': 'Sprechen Sie mit Agentforce!',
+        'uk': 'Talk with Agentforce!',
+        'us': 'Talk with Agentforce!',
+        'en': 'Talk with Agentforce!'
       };
       return messages[countryCode] || messages['en'];
     }
@@ -207,10 +207,10 @@
       
       // Car image URLs - Replace these with your actual Leapmotor car images
       var carImages = [
-        { name: 'C10', url: 'assets/model-a.jpg', color: 'Blue' },
-        { name: 'B10', url: 'assets/model-b.jpg', color: 'White' },
-        { name: 'T03', url: 'assets/model-c.jpg', color: 'Red' },
-        { name: 'B05', url: 'https://via.placeholder.com/120x80/95A5A6/FFFFFF?text=B05', color: 'Silver' }
+        { name: 'C10', url: 'assets/model-a.jpg'},
+        { name: 'B10', url: 'assets/model-b.jpg'},
+        { name: 'T03', url: 'assets/model-c.jpg'},
+        { name: 'B05', url: 'assets/car-hero.jpg'}
       ];
       var currentCarIndex = 0;
       
@@ -231,7 +231,7 @@
       
       // Stellantis logo - Replace URL with actual logo
       var logoImg = document.createElement("img");
-      logoImg.src = "assets/car-hero.jpg";
+      logoImg.src = "assets/Stellantis-logo.jpg";
       logoImg.alt = "Stellantis";
       logoImg.style.height = "24px";
       logoImg.style.width = "auto";
