@@ -86,180 +86,260 @@
       </nav>
     </div>
   </footer>
-
-	<script type='text/javascript'>
-    function initEmbeddedMessaging() {
-      try {
-        embeddedservice_bootstrap.settings.language = 'es';
-        embeddedservice_bootstrap.settings.displayHelpButton = true;
-        embeddedservice_bootstrap.settings.defaultMinimizedText = "Chat with Leappy";
-        embeddedservice_bootstrap.settings.disabledMinimizedText = "Leappy Offline";
-        
-        window.addEventListener("onEmbeddedMessagingReady", () => {
-          embeddedservice_bootstrap.prechatAPI.setHiddenPrechatFields({
-            Country: 'Spain',
-            Language: 'es',
-            CountryCode:'es'
-          });
+<script type="text/javascript">
+  function initEmbeddedMessaging() {
+    try {
+      embeddedservice_bootstrap.settings.language = "es"; // For example, enter 'en' or 'en-US'
+      // Personalizzazione del pulsante
+      embeddedservice_bootstrap.settings.displayHelpButton = true;
+      embeddedservice_bootstrap.settings.defaultMinimizedText =
+        "Chat with Leappy";
+      embeddedservice_bootstrap.settings.disabledMinimizedText =
+        "Leappy Offline";
+      window.addEventListener("onEmbeddedMessagingReady", () => {
+        embeddedservice_bootstrap.prechatAPI.setHiddenPrechatFields({
+          Country: "Spain",
+          Language: "es",
+          CountryCode: "es",
         });
-        embeddedservice_bootstrap.init(
-          '00DMA000003XnGM',
-          'LPM_Leapmotor',
-          'https://leapmotor--dev01.sandbox.my.site.com/ESWLPMLeapmotor1760706603231',
-          {
-            scrt2URL: 'https://leapmotor--dev01.sandbox.my.salesforce-scrt.com'
+      });
+      embeddedservice_bootstrap.init(
+        "00DMA000003XnGM",
+        "LPM_Leapmotor",
+        "https://leapmotor--dev01.sandbox.my.site.com/ESWLPMLeapmotor1760706603231",
+        {
+          scrt2URL: "https://leapmotor--dev01.sandbox.my.salesforce-scrt.com",
+        }
+      );
+    } catch (err) {
+      console.error("Error loading Embedded Messaging: ", err);
+    }
+  }
+  (function () {
+    console.log("Test custom chat button with Christmas carousel");
+    function hideStandardButton(es) {
+      if (es && es.utilAPI && typeof es.utilAPI.hideChatButton === "function") {
+        try {
+          es.utilAPI.hideChatButton();
+          console.log("hideChatButton() called");
+        } catch (e) {
+          console.warn("Error calling hideChatButton()", e);
+        }
+      }
+    }
+    function showCustomCTA(es) {
+      if (!es || !es.utilAPI) {
+        console.warn("utilAPI not available");
+        return;
+      }
+      var existing = document.getElementById("leap-chat-cta");
+      if (existing) {
+        existing.style.display = "inline-flex";
+        hideStandardButton(es);
+        console.log("Custom CTA shown again");
+        return;
+      }
+      // Create button container
+      var btn = document.createElement("button");
+      btn.id = "leap-chat-cta";
+      btn.style.position = "fixed";
+      btn.style.right = "32px";
+      btn.style.bottom = "32px";
+      btn.style.zIndex = "99999";
+      // BIGGER SIZE - Increased padding and font size
+      btn.style.padding = "24px 40px";
+      btn.style.fontSize = "22px";
+      btn.style.fontWeight = "700";
+      btn.style.borderRadius = "999px";
+      btn.style.border = "none";
+      btn.style.cursor = "pointer";
+      btn.style.boxShadow =
+        "0 8px 24px rgba(0,0,0,0.4), 0 0 40px rgba(255, 215, 0, 0.3)";
+      btn.style.background =
+        "linear-gradient(135deg, #c41e3a 0%, #165b33 50%, #c41e3a 100%)";
+      btn.style.backgroundSize = "200% 200%";
+      btn.style.color = "#ffffff";
+      btn.style.display = "inline-flex";
+      btn.style.alignItems = "center";
+      btn.style.justifyContent = "center";
+      btn.style.gap = "16px";
+      btn.style.transition = "all 0.3s ease";
+      btn.style.overflow = "visible";
+      btn.style.fontFamily = "'Arial', sans-serif";
+      btn.style.textShadow = "2px 2px 4px rgba(0,0,0,0.3)";
+      // Christmas icons carousel
+      var iconContainer = document.createElement("div");
+      iconContainer.style.position = "relative";
+      iconContainer.style.width = "36px";
+      iconContainer.style.height = "36px";
+      iconContainer.style.display = "flex";
+      iconContainer.style.alignItems = "center";
+      iconContainer.style.justifyContent = "center";
+      var christmasIcons = ["🎄", "🎅", "⛄", "🎁", "❄️", "🔔", "⭐", "🦌"];
+      var currentIconIndex = 0;
+      var iconSpan = document.createElement("span");
+      iconSpan.style.fontSize = "32px";
+      iconSpan.style.display = "block";
+      iconSpan.style.animation = "iconFadeIn 0.5s ease";
+      iconSpan.textContent = christmasIcons[0];
+      iconContainer.appendChild(iconSpan);
+      // Text content
+      var textSpan = document.createElement("span");
+      textSpan.textContent = "Talk with Agentforce! 🎄";
+      textSpan.style.letterSpacing = "0.5px";
+      btn.appendChild(iconContainer);
+      btn.appendChild(textSpan);
+      // Add CSS animations
+      var style = document.createElement("style");
+      style.textContent = `
+      @keyframes iconFadeIn {
+        0% { opacity: 0; transform: scale(0.5) rotate(-180deg); }
+        100% { opacity: 1; transform: scale(1) rotate(0deg); }
+      }
+      
+      @keyframes iconFadeOut {
+        0% { opacity: 1; transform: scale(1) rotate(0deg); }
+        100% { opacity: 0; transform: scale(0.5) rotate(180deg); }
+      }
+      @keyframes snowfall {
+        0% { transform: translateY(-10px) translateX(0); opacity: 0; }
+        50% { opacity: 1; }
+        100% { transform: translateY(10px) translateX(5px); opacity: 0; }
+      }
+      @keyframes gradientShift {
+        0% { background-position: 0% 50%; }
+        50% { background-position: 100% 50%; }
+        100% { background-position: 0% 50%; }
+      }
+      @keyframes pulse {
+        0%, 100% { transform: scale(1); }
+        50% { transform: scale(1.05); }
+      }
+      #leap-chat-cta {
+        animation: gradientShift 3s ease infinite, pulse 2s ease-in-out infinite;
+      }
+      #leap-chat-cta:hover {
+        transform: scale(1.08) !important;
+        box-shadow: 0 12px 32px rgba(0,0,0,0.5), 0 0 60px rgba(255, 215, 0, 0.5) !important;
+      }
+    `;
+      document.head.appendChild(style);
+      // Icon carousel rotation
+      setInterval(function () {
+        iconSpan.style.animation = "iconFadeOut 0.5s ease";
+        setTimeout(function () {
+          currentIconIndex = (currentIconIndex + 1) % christmasIcons.length;
+          iconSpan.textContent = christmasIcons[currentIconIndex];
+          iconSpan.style.animation = "iconFadeIn 0.5s ease";
+        }, 500);
+      }, 3000);
+      // Snowflakes effect
+      function createSnowflake() {
+        var snowflake = document.createElement("div");
+        snowflake.textContent = "❄";
+        snowflake.style.position = "absolute";
+        snowflake.style.fontSize = "16px";
+        snowflake.style.color = "#ffffff";
+        snowflake.style.pointerEvents = "none";
+        snowflake.style.animation = "snowfall 2s linear";
+        snowflake.style.left = Math.random() * 100 + "%";
+        snowflake.style.top = "-10px";
+        snowflake.style.opacity = "0";
+        btn.appendChild(snowflake);
+        setTimeout(function () {
+          if (snowflake.parentNode) {
+            snowflake.parentNode.removeChild(snowflake);
           }
-        );
-      } catch (err) {
-        console.error('Error loading Embedded Messaging: ', err);
+        }, 2000);
       }
-    };
-	(function () {
-  console.log("Persistent Christmas Button");
- 
-  const messages = [
-    "Chat with us!",
-    "Need Help?",
-    "Talk to us!",
-    "Get Support!",
-    "We're here!"
-  ];
-  
-  let currentIndex = 0;
-  let carouselTimer = null;
-  let keepAliveTimer = null;
-  let chatIsOpen = false;
-  function ensureButtonExists() {
-    // Don't show button if chat is open
-    if (chatIsOpen) return;
-    
-    let btn = document.getElementById("xmas-btn");
-    
-    // If button exists and is visible, we're good
-    if (btn && btn.style.display !== "none") {
-      return;
+      // Create snowflakes periodically
+      setInterval(createSnowflake, 800);
+      btn.addEventListener("mouseenter", function () {
+        btn.style.transform = "scale(1.08)";
+      });
+      btn.addEventListener("mouseleave", function () {
+        btn.style.transform = "scale(1)";
+      });
+      btn.addEventListener("click", function () {
+        if (typeof es.utilAPI.launchChat === "function") {
+          console.log("launchChat() from CTA");
+          var r = es.utilAPI.launchChat();
+          if (r && typeof r.then === "function") {
+            r.then(function () {
+              console.log("Chat launched (Promise resolved)");
+            }).catch(function (err) {
+              console.error("Error launching chat", err);
+            });
+          }
+        } else {
+          console.warn("launchChat() not available");
+        }
+      });
+      document.body.appendChild(btn);
+      hideStandardButton(es);
+      console.log("Custom CTA created with Christmas carousel");
     }
-    
-    // If button exists but hidden, show it
-    if (btn) {
-      console.log("Button exists but hidden, showing it");
-      btn.style.display = "block";
-      btn.style.visibility = "visible";
-      btn.style.opacity = "1";
-      return;
+    function hideCustomCTA() {
+      var btn = document.getElementById("leap-chat-cta");
+      if (btn) {
+        btn.style.display = "none";
+        console.log("Custom CTA hidden");
+      }
     }
-    
-    // Create new button
-    console.log("Creating new button");
-    
-    btn = document.createElement("button");
-    btn.id = "xmas-btn";
-    btn.textContent = messages[currentIndex];
-    
-    // Inline styles with !important to prevent overrides
-    btn.setAttribute("style", `
-      position: fixed !important;
-      right: 20px !important;
-      bottom: 20px !important;
-      z-index: 999999 !important;
-      min-width: 200px !important;
-      min-height: 70px !important;
-      padding: 15px 25px !important;
-      font-size: 18px !important;
-      font-weight: bold !important;
-      color: white !important;
-      background: linear-gradient(135deg, #dc2626, #16a34a) !important;
-      border: 3px solid gold !important;
-      border-radius: 40px !important;
-      cursor: pointer !important;
-      box-shadow: 0 10px 30px rgba(0,0,0,0.3) !important;
-      transition: all 0.3s ease !important;
-      font-family: Arial, sans-serif !important;
-      display: block !important;
-      visibility: visible !important;
-      opacity: 1 !important;
-    `);
-    
-    // Hover effects
-    btn.addEventListener("mouseenter", function() {
-      this.style.transform = "scale(1.1)";
-    });
-    
-    btn.addEventListener("mouseleave", function() {
-      this.style.transform = "scale(1)";
-    });
-    
-    // Click handler
-    btn.addEventListener("click", function() {
-      console.log("Button clicked");
-      chatIsOpen = true;
-      if (window.embeddedservice_bootstrap && 
-          window.embeddedservice_bootstrap.utilAPI && 
-          window.embeddedservice_bootstrap.utilAPI.launchChat) {
-        window.embeddedservice_bootstrap.utilAPI.launchChat();
+    window.addEventListener("onEmbeddedMessagingButtonCreated", function () {
+      console.log("onEmbeddedMessagingButtonCreated fired");
+      var es = window.embeddedservice_bootstrap;
+      if (es) {
+        showCustomCTA(es);
       }
     });
-    
-    document.body.appendChild(btn);
-    console.log("Button created and added");
-  }
-  function updateCarousel() {
-    const btn = document.getElementById("xmas-btn");
-    if (!btn || chatIsOpen) return;
-    
-    // Fade effect
-    btn.style.opacity = "0.5";
-    
-    setTimeout(function() {
-      currentIndex = (currentIndex + 1) % messages.length;
-      btn.textContent = messages[currentIndex];
-      btn.style.opacity = "1";
-    }, 200);
-  }
-  function startCarousel() {
-    if (carouselTimer) clearInterval(carouselTimer);
-    carouselTimer = setInterval(updateCarousel, 2500);
-    console.log("Carousel started");
-  }
-  function startKeepAlive() {
-    if (keepAliveTimer) clearInterval(keepAliveTimer);
-    // Check every 500ms if button still exists
-    keepAliveTimer = setInterval(ensureButtonExists, 500);
-    console.log("Keep-alive started");
-  }
-  // Event listeners
-  window.addEventListener("onEmbeddedMessagingWindowMaximized", function() {
-    console.log("Chat opened");
-    chatIsOpen = true;
-    const btn = document.getElementById("xmas-btn");
-    if (btn) btn.style.display = "none";
-  });
-  window.addEventListener("onEmbeddedMessagingWindowMinimized", function() {
-    console.log("Chat closed");
-    chatIsOpen = false;
-    ensureButtonExists();
-  });
-  // Initialize
-  function init() {
-    console.log("Initializing button system");
-    ensureButtonExists();
-    startCarousel();
-    startKeepAlive();
-  }
-  // Start immediately
-  init();
-  
-  // Also start after delays
-  setTimeout(init, 1000);
-  setTimeout(init, 2000);
-  
-})();
-  </script>
-  <script type='text/javascript'
-    src='https://leapmotor--dev01.sandbox.my.site.com/ESWLPMLeapmotor1760706603231/assets/js/bootstrap.min.js'
-    onload='initEmbeddedMessaging()'></script>
+    window.addEventListener("onEmbeddedMessagingWindowMaximized", function () {
+      console.log("onEmbeddedMessagingWindowMaximized fired");
+      hideCustomCTA();
+    });
+    window.addEventListener("onEmbeddedMessagingWindowMinimized", function () {
+      console.log("onEmbeddedMessagingWindowMinimized fired");
+      var es = window.embeddedservice_bootstrap;
+      if (es) {
+        hideStandardButton(es);
+        showCustomCTA(es);
+      }
+    });
+    function waitForES(maxAttempts, intervalMs) {
+      var attempts = 0;
+      (function check() {
+        attempts++;
+        var es = window.embeddedservice_bootstrap;
+        if (es && es.utilAPI) {
+          console.log("utilAPI ready (initial)");
+          showCustomCTA(es);
+          return;
+        }
+        if (attempts >= maxAttempts) {
+          console.warn("utilAPI not found after", attempts, "attempts");
+          return;
+        }
+        setTimeout(check, intervalMs);
+      })();
+    }
+    if (
+      document.readyState === "complete" ||
+      document.readyState === "interactive"
+    ) {
+      waitForES(50, 200);
+    } else {
+      window.addEventListener("DOMContentLoaded", function () {
+        waitForES(50, 200);
+      });
+    }
+  })();
+</script>
+<script
+  type="text/javascript"
+  src="https://leapmotor--dev01.sandbox.my.site.com/ESWLPMLeapmotor1760706603231/assets/js/bootstrap.min.js"
+  onload="initEmbeddedMessaging()"
+></script>
 
-	
 </body>
 
 </html>
