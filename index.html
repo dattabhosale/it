@@ -118,6 +118,34 @@
   }
   (function () {
     console.log("Test custom chat button with Christmas carousel");
+    // Get country code from URL path
+    function getCountryFromURL() {
+      var path = window.location.pathname;
+      var pathParts = path.split('/').filter(function(part) { return part.length > 0; });
+      
+      // Check if there's a country code in the path (e.g., /it/, /es/, /fr/)
+      if (pathParts.length > 0) {
+        var countryCode = pathParts[0].toLowerCase();
+        return countryCode;
+      }
+      return 'en'; // default to English
+    }
+    // Get localized message based on country
+    function getLocalizedMessage(countryCode) {
+      var messages = {
+        'it': 'Parla con Agentforce! 🎄',      // Italian
+        'es': 'Habla con Agentforce! 🎄',      // Spanish
+        'fr': 'Parlez avec Agentforce! 🎄',    // French
+        'de': 'Sprechen Sie mit Agentforce! 🎄', // German
+        'uk': 'Talk with Agentforce! 🎄',      // UK English
+        'us': 'Talk with Agentforce! 🎄',      // US English
+        'en': 'Talk with Agentforce! 🎄'       // Default English
+      };
+      return messages[countryCode] || messages['en'];
+    }
+    var detectedCountry = getCountryFromURL();
+    var buttonMessage = getLocalizedMessage(detectedCountry);
+    console.log('Detected country:', detectedCountry, '| Message:', buttonMessage);
     function hideStandardButton(es) {
       if (es && es.utilAPI && typeof es.utilAPI.hideChatButton === "function") {
         try {
@@ -144,12 +172,12 @@
       var btn = document.createElement("button");
       btn.id = "leap-chat-cta";
       btn.style.position = "fixed";
-      btn.style.right = "32px";
+      btn.style.right = "80px";  // Shifted left from 32px
       btn.style.bottom = "32px";
       btn.style.zIndex = "99999";
-      // MUCH BIGGER SIZE - Significantly increased to hide standard button
-      btn.style.padding = "32px 56px";
-      btn.style.fontSize = "26px";
+      // Optimized SIZE - Slightly smaller but still prominent
+      btn.style.padding = "28px 48px";  // Reduced from 32px 56px
+      btn.style.fontSize = "24px";      // Reduced from 26px
       btn.style.fontWeight = "700";
       btn.style.borderRadius = "999px";
       btn.style.border = "none";
@@ -163,32 +191,32 @@
       btn.style.display = "inline-flex";
       btn.style.alignItems = "center";
       btn.style.justifyContent = "center";
-      btn.style.gap = "20px";
+      btn.style.gap = "18px";           // Reduced from 20px
       btn.style.transition = "all 0.3s ease";
       btn.style.overflow = "visible";
       btn.style.fontFamily = "'Arial', sans-serif";
       btn.style.textShadow = "3px 3px 6px rgba(0,0,0,0.4)";
-      btn.style.minWidth = "380px";
-      btn.style.minHeight = "90px";
+      btn.style.minWidth = "350px";     // Reduced from 380px
+      btn.style.minHeight = "85px";     // Reduced from 90px
       // Christmas icons carousel
       var iconContainer = document.createElement("div");
       iconContainer.style.position = "relative";
-      iconContainer.style.width = "48px";
-      iconContainer.style.height = "48px";
+      iconContainer.style.width = "44px";   // Slightly reduced from 48px
+      iconContainer.style.height = "44px";  // Slightly reduced from 48px
       iconContainer.style.display = "flex";
       iconContainer.style.alignItems = "center";
       iconContainer.style.justifyContent = "center";
       var christmasIcons = ["🎄", "🎅", "⛄", "🎁", "❄️", "🔔", "⭐", "🦌"];
       var currentIconIndex = 0;
       var iconSpan = document.createElement("span");
-      iconSpan.style.fontSize = "48px";
+      iconSpan.style.fontSize = "44px";     // Slightly reduced from 48px
       iconSpan.style.display = "block";
       iconSpan.style.animation = "iconFadeIn 0.5s ease";
       iconSpan.textContent = christmasIcons[0];
       iconContainer.appendChild(iconSpan);
-      // Text content
+      // Text content with localized message
       var textSpan = document.createElement("span");
-      textSpan.textContent = "Talk with Agentforce! 🎄";
+      textSpan.textContent = buttonMessage;  // Use localized message
       textSpan.style.letterSpacing = "0.5px";
       btn.appendChild(iconContainer);
       btn.appendChild(textSpan);
@@ -342,8 +370,6 @@
   src="https://leapmotor--dev01.sandbox.my.site.com/ESWLPMLeapmotor1760706603231/assets/js/bootstrap.min.js"
   onload="initEmbeddedMessaging()"
 ></script>
-
-
 </body>
 
 </html>
