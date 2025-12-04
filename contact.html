@@ -221,7 +221,13 @@
       carImg.style.height = "100%";
       carImg.style.objectFit = "contain";
       carImg.style.display = "block";
-      carImg.style.transition = "opacity 0.5s ease";
+      carImg.style.transition = "opacity 0.5s ease, transform 0.3s ease";
+      // Make image look better - remove/blend background
+      carImg.style.filter = "drop-shadow(0 2px 4px rgba(0,0,0,0.3)) brightness(1.1) contrast(1.1)";
+      carImg.style.backgroundColor = "rgba(255, 255, 255, 0.9)";
+      carImg.style.borderRadius = "50%";
+      carImg.style.padding = "4px";
+      carImg.style.border = "2px solid rgba(255, 255, 255, 0.3)";
       iconContainer.appendChild(carImg);
       
       // Text content with localized message
@@ -233,11 +239,16 @@
       var logoImg = document.createElement("img");
       logoImg.src = "assets/Stellantis-logo.jpg";
       logoImg.alt = "Stellantis";
-      logoImg.style.height = "24px";
+      logoImg.style.height = "28px";  // Slightly larger
       logoImg.style.width = "auto";
       logoImg.style.objectFit = "contain";
       logoImg.style.marginLeft = "8px";
-      logoImg.style.opacity = "0.9";
+      logoImg.style.opacity = "0.95";
+      // Better logo appearance
+      logoImg.style.filter = "drop-shadow(0 1px 3px rgba(0,0,0,0.3)) brightness(1.15)";
+      logoImg.style.backgroundColor = "rgba(255, 255, 255, 0.85)";
+      logoImg.style.padding = "4px 8px";
+      logoImg.style.borderRadius = "8px";
       
       btn.appendChild(iconContainer);
       btn.appendChild(textSpan);
@@ -363,7 +374,7 @@
           carImg.src = carImages[currentCarIndex].url;
           carImg.alt = carImages[currentCarIndex].name;
           carImg.style.opacity = "1";
-          console.log('Showing car:', carImages[currentCarIndex].name, carImages[currentCarIndex].color);
+          console.log('Showing car:', carImages[currentCarIndex].name);
         }, 500);
       }, 3000);
       
