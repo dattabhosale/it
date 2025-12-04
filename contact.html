@@ -36,69 +36,506 @@
   <footer class="site-footer">
     <div class="container">© 2025 LeapReplica</div>
   </footer>
-
-  <script src="js/main.js"></script>
-  <script type='text/javascript'>
-	function initEmbeddedMessaging() {
-		try {
-			embeddedservice_bootstrap.settings.language = 'en_US'; // For example, enter 'en' or 'en-US'
-			window.addEventListener("onEmbeddedMessagingReady", () => {
-				const currentUrl = window.location.href;
-				console.log(currentUrl); // Example: https://www.example.com/path/to/page?param1=value1#section
-				const urlArray = currentUrl.split("/")
-				console.log(" Url Country", urlArray[3]);
-				const languageData = [
-  										['uk', 'English'],
-  										['it', 'Italian'],
-  										['de', 'German'],
-										['fr', 'French'],
-										['cz', 'Czech'],
-										['ie', 'English'],
-										['hu', 'Magyar'],
-										['gr', 'Greek'],
-										['hr', 'Croatian'],
-										['bg','Bulgarian'],
-										['nl', 'Nederland'],
-										['pt', 'Português']
-									];
-				const languageMap = new Map(languageData);
-				const countryData = [
-  										['uk', 'United Kingdom'],
-  										['it', 'Italy'],
-  										['de', 'Germany'],
-										['fr', 'France'],
-										['cz', 'Czech Republic'],
-										['ie', 'Ireland'],
-										['hu', 'Hungary'],
-										['gr', 'Greece'],
-										['hr', 'Croatia'],
-										['bg', 'Bulgaria'],
-										['nl', 'Nederland'],
-										['pt', 'Portugal']
-									];
-				const countryMap = new Map(countryData);
-				const ct = countryMap.get(urlArray[3]);
-				const lg = languageMap.get(urlArray[3]);
-				console.log('value of ct',ct);
-				console.log('value of lg',lg);
-				embeddedservice_bootstrap.prechatAPI.setHiddenPrechatFields({
-  																				Country: ct,
-  																				Language: lg,
- 																			});
-			});
-			embeddedservice_bootstrap.init(
-				'00DMA000003XnGM',
-				'LPM_Leapmotor',
-				'https://leapmotor--dev01.sandbox.my.site.com/ESWLPMLeapmotor1760706603231',
-				{
-					scrt2URL: 'https://leapmotor--dev01.sandbox.my.salesforce-scrt.com'
-				}
-			);
-		} catch (err) {
-			console.error('Error loading Embedded Messaging: ', err);
-		}
-	};
+	<script type='text/javascript'>
+  function initEmbeddedMessaging() {
+    try {
+      embeddedservice_bootstrap.settings.language = "it"; // For example, enter 'en' or 'en-US'
+      // Personalizzazione del pulsante
+      embeddedservice_bootstrap.settings.displayHelpButton = true;
+      embeddedservice_bootstrap.settings.defaultMinimizedText =
+        "Chat with Leappy";
+      embeddedservice_bootstrap.settings.disabledMinimizedText =
+        "Leappy Offline";
+      window.addEventListener("onEmbeddedMessagingReady", () => {
+        embeddedservice_bootstrap.prechatAPI.setHiddenPrechatFields({
+          Country: "Italy",
+          Language: "it",
+          CountryCode: "it",
+        });
+      });
+      embeddedservice_bootstrap.init(
+        "00DMA000003XnGM",
+        "LPM_Leapmotor",
+        "https://leapmotor--dev01.sandbox.my.site.com/ESWLPMLeapmotor1760706603231",
+        {
+          scrt2URL: "https://leapmotor--dev01.sandbox.my.salesforce-scrt.com",
+        }
+      );
+    } catch (err) {
+      console.error("Error loading Embedded Messaging: ", err);
+    }
+  }
+  (function () {
+    console.log("Test custom chat button with Christmas carousel");
+    // Get country code from URL path
+    function getCountryFromURL() {
+      var path = window.location.pathname;
+      var pathParts = path.split('/').filter(function(part) { return part.length > 0; });
+      
+      // Check if there's a country code in the path (e.g., /it/, /es/, /fr/)
+      if (pathParts.length > 0) {
+        var countryCode = pathParts[0].toLowerCase();
+        return countryCode;
+      }
+      return 'en'; // default to English
+    }
+    // Get localized message based on country
+    function getLocalizedMessage(countryCode) {
+      var messages = {
+        'it': 'Parla con Agentforce! 🎄',      // Italian
+        'es': 'Habla con Agentforce! 🎄',      // Spanish
+        'fr': 'Parlez avec Agentforce! 🎄',    // French
+        'de': 'Sprechen Sie mit Agentforce! 🎄', // German
+        'uk': 'Talk with Agentforce! 🎄',      // UK English
+        'us': 'Talk with Agentforce! 🎄',      // US English
+        'en': 'Talk with Agentforce! 🎄'       // Default English
+      };
+      return messages[countryCode] || messages['en'];
+    }
+    // Get localized popup message
+    function getLocalizedPopupMessage(countryCode) {
+      var popupMessages = {
+        'it': '👋 Ciao! Hai bisogno di aiuto? Prova la nostra chat!',
+        'es': '👋 ¡Hola! ¿Necesitas ayuda? ¡Prueba nuestro chat!',
+        'fr': '👋 Bonjour! Besoin d\'aide? Essayez notre chat!',
+        'de': '👋 Hallo! Brauchen Sie Hilfe? Probieren Sie unseren Chat!',
+        'uk': '👋 Hi! Need help? Try our chat!',
+        'us': '👋 Hi! Need help? Try our chat!',
+        'en': '👋 Hi! Need help? Try our chat!'
+      };
+      return popupMessages[countryCode] || popupMessages['en'];
+    }
+    var detectedCountry = getCountryFromURL();
+    var buttonMessage = getLocalizedMessage(detectedCountry);
+    var popupMessage = getLocalizedPopupMessage(detectedCountry);
+    console.log('Detected country:', detectedCountry, '| Message:', buttonMessage);
+    var chatClicked = false;  // Track if chat has been clicked
+    var popupInterval = null; // Store interval ID for popup
+    var embeddedServiceInstance = null; // Store ES instance
+    // Create notification sound using Web Audio API
+    function playNotificationSound() {
+      try {
+        var audioContext = new (window.AudioContext || window.webkitAudioContext)();
+        var oscillator = audioContext.createOscillator();
+        var gainNode = audioContext.createGain();
+        
+        oscillator.connect(gainNode);
+        gainNode.connect(audioContext.destination);
+        
+        oscillator.frequency.value = 800; // Frequency in Hz
+        oscillator.type = 'sine';
+        
+        gainNode.gain.setValueAtTime(0.3, audioContext.currentTime);
+        gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.5);
+        
+        oscillator.start(audioContext.currentTime);
+        oscillator.stop(audioContext.currentTime + 0.5);
+        
+        console.log('Notification sound played');
+      } catch (e) {
+        console.warn('Could not play notification sound:', e);
+      }
+    }
+    function hideStandardButton(es) {
+      if (es && es.utilAPI && typeof es.utilAPI.hideChatButton === "function") {
+        try {
+          es.utilAPI.hideChatButton();
+          console.log("hideChatButton() called");
+        } catch (e) {
+          console.warn("Error calling hideChatButton()", e);
+        }
+      }
+    }
+    function showCustomCTA(es) {
+      if (!es || !es.utilAPI) {
+        console.warn("utilAPI not available");
+        return;
+      }
+      var existing = document.getElementById("leap-chat-cta");
+      if (existing) {
+        existing.style.display = "inline-flex";
+        hideStandardButton(es);
+        console.log("Custom CTA shown again");
+        return;
+      }
+      // Create button container
+      var btn = document.createElement("button");
+      btn.id = "leap-chat-cta";
+      btn.style.position = "fixed";
+      btn.style.right = "14px";  // Positioned on the right
+      btn.style.bottom = "24px";
+      btn.style.zIndex = "99999";
+      // Optimized SIZE - Slightly smaller but still prominent
+      btn.style.padding = "28px 48px";  // Reduced from 32px 56px
+      btn.style.fontSize = "24px";      // Reduced from 26px
+      btn.style.fontWeight = "700";
+      btn.style.borderRadius = "999px";
+      btn.style.border = "none";
+      btn.style.cursor = "pointer";
+      btn.style.boxShadow =
+        "0 12px 32px rgba(0,0,0,0.5), 0 0 60px rgba(255, 215, 0, 0.4)";
+      btn.style.background =
+        "linear-gradient(135deg, #c41e3a 0%, #165b33 50%, #c41e3a 100%)";
+      btn.style.backgroundSize = "200% 200%";
+      btn.style.color = "#ffffff";
+      btn.style.display = "inline-flex";
+      btn.style.alignItems = "center";
+      btn.style.justifyContent = "center";
+      btn.style.gap = "18px";           // Reduced from 20px
+      btn.style.transition = "all 0.3s ease";
+      btn.style.overflow = "visible";
+      btn.style.fontFamily = "'Arial', sans-serif";
+      btn.style.textShadow = "3px 3px 6px rgba(0,0,0,0.4)";
+      btn.style.minWidth = "350px";     // Reduced from 380px
+      btn.style.minHeight = "85px";     // Reduced from 90px
+      // Leapmotor car carousel with Stellantis logo
+      var iconContainer = document.createElement("div");
+      iconContainer.style.position = "relative";
+      iconContainer.style.width = "60px";   // Larger for car images
+      iconContainer.style.height = "44px";  
+      iconContainer.style.display = "flex";
+      iconContainer.style.alignItems = "center";
+      iconContainer.style.justifyContent = "center";
+      
+      // Car model images - using base64 or URLs
+      var carImages = [
+        'C10',  // Leapmotor C10
+        'B10',  // Leapmotor B10
+        'T03'   // Leapmotor T03
+      ];
+      var currentIconIndex = 0;
+      
+      var iconImg = document.createElement("img");
+      iconImg.style.width = "100%";
+      iconImg.style.height = "auto";
+      iconImg.style.maxHeight = "44px";
+      iconImg.style.objectFit = "contain";
+      iconImg.style.display = "block";
+      iconImg.style.animation = "iconFadeIn 0.5s ease";
+      iconImg.style.filter = "drop-shadow(0 2px 4px rgba(0,0,0,0.3))";
+      
+      // Use Stellantis logo as default/first image
+      iconImg.src = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 200 60'%3E%3Ctext x='10' y='40' font-family='Arial' font-size='32' font-weight='bold' fill='white'%3ELEAPMOTOR%3C/text%3E%3C/svg%3E";
+      iconImg.alt = "Leapmotor";
+      
+      iconContainer.appendChild(iconImg);
+      // Text content with localized message
+      var textSpan = document.createElement("span");
+      textSpan.textContent = buttonMessage;  // Use localized message
+      textSpan.style.letterSpacing = "0.5px";
+      btn.appendChild(iconContainer);
+      btn.appendChild(textSpan);
+      // Add CSS animations
+      var style = document.createElement("style");
+      style.textContent = `
+      @keyframes iconFadeIn {
+        0% { opacity: 0; transform: scale(0.5) rotate(-180deg); }
+        100% { opacity: 1; transform: scale(1) rotate(0deg); }
+      }
+      
+      @keyframes iconFadeOut {
+        0% { opacity: 1; transform: scale(1) rotate(0deg); }
+        100% { opacity: 0; transform: scale(0.5) rotate(180deg); }
+      }
+      @keyframes snowfall {
+        0% { transform: translateY(-10px) translateX(0); opacity: 0; }
+        50% { opacity: 1; }
+        100% { transform: translateY(10px) translateX(5px); opacity: 0; }
+      }
+      @keyframes gradientShift {
+        0% { background-position: 0% 50%; }
+        50% { background-position: 100% 50%; }
+        100% { background-position: 0% 50%; }
+      }
+      @keyframes pulse {
+        0%, 100% { transform: scale(1); }
+        50% { transform: scale(1.05); }
+      }
+      @keyframes popupSlideIn {
+        0% { opacity: 0; transform: translateY(20px) scale(0.8); }
+        100% { opacity: 1; transform: translateY(0) scale(1); }
+      }
+      @keyframes popupBounce {
+        0%, 100% { transform: translateY(0); }
+        50% { transform: translateY(-5px); }
+      }
+      #leap-chat-cta {
+        animation: gradientShift 3s ease infinite, pulse 2s ease-in-out infinite;
+      }
+      #leap-chat-cta:hover {
+        transform: scale(1.08) !important;
+        box-shadow: 0 12px 32px rgba(0,0,0,0.5), 0 0 60px rgba(255, 215, 0, 0.5) !important;
+      }
+      .chat-popup-tooltip {
+        position: fixed;
+        right: 32px;
+        bottom: 140px;
+        background: linear-gradient(135deg, #ffffff 0%, #f0f0f0 100%);
+        color: #333;
+        padding: 16px 24px;
+        border-radius: 16px;
+        box-shadow: 0 8px 24px rgba(0,0,0,0.3), 0 0 40px rgba(196, 30, 58, 0.2);
+        z-index: 99998;
+        max-width: 280px;
+        font-family: 'Arial', sans-serif;
+        font-size: 15px;
+        font-weight: 600;
+        animation: popupSlideIn 0.5s ease, popupBounce 1.5s ease-in-out 0.5s infinite;
+        border: 3px solid #c41e3a;
+        cursor: pointer;
+        transition: transform 0.2s ease, box-shadow 0.2s ease;
+      }
+      .chat-popup-tooltip:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 12px 32px rgba(0,0,0,0.4), 0 0 50px rgba(196, 30, 58, 0.3);
+      }
+      .chat-popup-tooltip::after {
+        content: '';
+        position: absolute;
+        bottom: -12px;
+        right: 40px;
+        width: 0;
+        height: 0;
+        border-left: 12px solid transparent;
+        border-right: 12px solid transparent;
+        border-top: 12px solid #c41e3a;
+      }
+      .chat-popup-close {
+        position: absolute;
+        top: 8px;
+        right: 8px;
+        background: #c41e3a;
+        color: white;
+        border: none;
+        border-radius: 50%;
+        width: 24px;
+        height: 24px;
+        font-size: 16px;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-weight: bold;
+        line-height: 1;
+      }
+      .chat-popup-close:hover {
+        background: #a01828;
+      }
+    `;
+      document.head.appendChild(style);
+      // Icon carousel rotation - cycle through car models
+      setInterval(function () {
+        iconImg.style.animation = "iconFadeOut 0.5s ease";
+        setTimeout(function () {
+          currentIconIndex = (currentIconIndex + 1) % carImages.length;
+          var carModel = carImages[currentIconIndex];
+          
+          // Create SVG with car model name
+          var svgText = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 200 60'%3E%3Ctext x='50%25' y='50%25' font-family='Arial' font-size='28' font-weight='bold' fill='white' text-anchor='middle' dominant-baseline='middle'%3E" + carModel + "%3C/text%3E%3Crect x='10' y='25' width='180' height='20' rx='10' fill='none' stroke='white' stroke-width='2'/%3E%3C/svg%3E";
+          
+          iconImg.src = svgText;
+          iconImg.alt = "Leapmotor " + carModel;
+          iconImg.style.animation = "iconFadeIn 0.5s ease";
+        }, 500);
+      }, 3000);
+      // Snowflakes effect
+      function createSnowflake() {
+        var snowflake = document.createElement("div");
+        snowflake.textContent = "❄";
+        snowflake.style.position = "absolute";
+        snowflake.style.fontSize = "20px";
+        snowflake.style.color = "#ffffff";
+        snowflake.style.pointerEvents = "none";
+        snowflake.style.animation = "snowfall 2s linear";
+        snowflake.style.left = Math.random() * 100 + "%";
+        snowflake.style.top = "-10px";
+        snowflake.style.opacity = "0";
+        btn.appendChild(snowflake);
+        setTimeout(function () {
+          if (snowflake.parentNode) {
+            snowflake.parentNode.removeChild(snowflake);
+          }
+        }, 2000);
+      }
+      // Create snowflakes periodically
+      setInterval(createSnowflake, 800);
+      btn.addEventListener("mouseenter", function () {
+        btn.style.transform = "scale(1.08)";
+      });
+      btn.addEventListener("mouseleave", function () {
+        btn.style.transform = "scale(1)";
+      });
+      btn.addEventListener("click", function () {
+        chatClicked = true;  // Mark chat as clicked
+        hidePopupTooltip();  // Hide popup when chat is clicked
+        stopPopupInterval(); // Stop showing popups
+        
+        if (typeof embeddedServiceInstance.utilAPI.launchChat === "function") {
+          console.log("launchChat() from CTA");
+          var r = embeddedServiceInstance.utilAPI.launchChat();
+          if (r && typeof r.then === "function") {
+            r.then(function () {
+              console.log("Chat launched (Promise resolved)");
+            }).catch(function (err) {
+              console.error("Error launching chat", err);
+            });
+          }
+        } else {
+          console.warn("launchChat() not available");
+        }
+      });
+      document.body.appendChild(btn);
+      hideStandardButton(es);
+      embeddedServiceInstance = es; // Store ES instance
+      console.log("Custom CTA created with Christmas carousel");
+      // Start popup interval - show every 60 seconds if chat not clicked
+      startPopupInterval();
+    }
+    // Start interval to show popup periodically
+    function startPopupInterval() {
+      // Show first popup after 5 seconds
+      setTimeout(function() {
+        if (!chatClicked) {
+          showPopupTooltip();
+        }
+      }, 5000);
+      // Then show every 60 seconds
+      popupInterval = setInterval(function() {
+        if (!chatClicked) {
+          showPopupTooltip();
+        }
+      }, 60000); // 60 seconds = 1 minute
+    }
+    // Stop popup interval
+    function stopPopupInterval() {
+      if (popupInterval) {
+        clearInterval(popupInterval);
+        popupInterval = null;
+        console.log('Popup interval stopped');
+      }
+    }
+    // Create and show popup tooltip
+    function showPopupTooltip() {
+      var existingPopup = document.getElementById("chat-popup-tooltip");
+      if (existingPopup || chatClicked) return;
+      var popup = document.createElement("div");
+      popup.id = "chat-popup-tooltip";
+      popup.className = "chat-popup-tooltip";
+      popup.textContent = popupMessage;
+      // Make popup clickable to open chat
+      popup.addEventListener("click", function(e) {
+        // Don't trigger if clicking close button
+        if (e.target.className === 'chat-popup-close') return;
+        
+        chatClicked = true;
+        hidePopupTooltip();
+        stopPopupInterval();
+        
+        if (embeddedServiceInstance && typeof embeddedServiceInstance.utilAPI.launchChat === "function") {
+          console.log("launchChat() from popup");
+          var r = embeddedServiceInstance.utilAPI.launchChat();
+          if (r && typeof r.then === "function") {
+            r.then(function () {
+              console.log("Chat launched from popup (Promise resolved)");
+            }).catch(function (err) {
+              console.error("Error launching chat from popup", err);
+            });
+          }
+        }
+      });
+      // Add close button
+      var closeBtn = document.createElement("button");
+      closeBtn.className = "chat-popup-close";
+      closeBtn.textContent = "×";
+      closeBtn.addEventListener("click", function(e) {
+        e.stopPropagation(); // Prevent popup click event
+        hidePopupTooltip();
+        // Don't set chatClicked to true - allow popup to show again
+      });
+      popup.appendChild(closeBtn);
+      document.body.appendChild(popup);
+      // Play notification sound
+      playNotificationSound();
+      // Auto-hide after 10 seconds
+      setTimeout(function() {
+        hidePopupTooltip();
+      }, 10000);
+      console.log("Popup tooltip shown");
+    }
+    // Hide popup tooltip
+    function hidePopupTooltip() {
+      var popup = document.getElementById("chat-popup-tooltip");
+      if (popup) {
+        popup.style.animation = "none";
+        popup.style.opacity = "0";
+        popup.style.transform = "translateY(20px) scale(0.8)";
+        setTimeout(function() {
+          if (popup.parentNode) {
+            popup.parentNode.removeChild(popup);
+          }
+        }, 300);
+        console.log("Popup tooltip hidden");
+      }
+    }
+    function hideCustomCTA() {
+      var btn = document.getElementById("leap-chat-cta");
+      if (btn) {
+        btn.style.display = "none";
+        console.log("Custom CTA hidden");
+      }
+    }
+    window.addEventListener("onEmbeddedMessagingButtonCreated", function () {
+      console.log("onEmbeddedMessagingButtonCreated fired");
+      var es = window.embeddedservice_bootstrap;
+      if (es) {
+        showCustomCTA(es);
+      }
+    });
+    window.addEventListener("onEmbeddedMessagingWindowMaximized", function () {
+      console.log("onEmbeddedMessagingWindowMaximized fired");
+      hideCustomCTA();
+    });
+    window.addEventListener("onEmbeddedMessagingWindowMinimized", function () {
+      console.log("onEmbeddedMessagingWindowMinimized fired");
+      var es = window.embeddedservice_bootstrap;
+      if (es) {
+        hideStandardButton(es);
+        showCustomCTA(es);
+      }
+    });
+    function waitForES(maxAttempts, intervalMs) {
+      var attempts = 0;
+      (function check() {
+        attempts++;
+        var es = window.embeddedservice_bootstrap;
+        if (es && es.utilAPI) {
+          console.log("utilAPI ready (initial)");
+          showCustomCTA(es);
+          return;
+        }
+        if (attempts >= maxAttempts) {
+          console.warn("utilAPI not found after", attempts, "attempts");
+          return;
+        }
+        setTimeout(check, intervalMs);
+      })();
+    }
+    if (
+      document.readyState === "complete" ||
+      document.readyState === "interactive"
+    ) {
+      waitForES(50, 200);
+    } else {
+      window.addEventListener("DOMContentLoaded", function () {
+        waitForES(50, 200);
+      });
+    }
+  })();
 </script>
-<script type='text/javascript' src='https://leapmotor--dev01.sandbox.my.site.com/ESWLPMLeapmotor1760706603231/assets/js/bootstrap.min.js' onload='initEmbeddedMessaging()'></script>
+<script
+  type="text/javascript"
+  src="https://leapmotor--dev01.sandbox.my.site.com/ESWLPMLeapmotor1760706603231/assets/js/bootstrap.min.js"
+  onload="initEmbeddedMessaging()"
+></script>
 </body>
 </html>
