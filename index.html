@@ -86,8 +86,7 @@
       </nav>
     </div>
   </footer>
-
-  <script type="text/javascript">
+<script type="text/javascript">
   function initEmbeddedMessaging() {
     try {
       embeddedservice_bootstrap.settings.language = "es"; // For example, enter 'en' or 'en-US'
@@ -161,6 +160,32 @@
     var popupMessage = getLocalizedPopupMessage(detectedCountry);
     console.log('Detected country:', detectedCountry, '| Message:', buttonMessage);
     var chatClicked = false;  // Track if chat has been clicked
+    var popupInterval = null; // Store interval ID for popup
+    var embeddedServiceInstance = null; // Store ES instance
+    // Create notification sound using Web Audio API
+    function playNotificationSound() {
+      try {
+        var audioContext = new (window.AudioContext || window.webkitAudioContext)();
+        var oscillator = audioContext.createOscillator();
+        var gainNode = audioContext.createGain();
+        
+        oscillator.connect(gainNode);
+        gainNode.connect(audioContext.destination);
+        
+        oscillator.frequency.value = 800; // Frequency in Hz
+        oscillator.type = 'sine';
+        
+        gainNode.gain.setValueAtTime(0.3, audioContext.currentTime);
+        gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.5);
+        
+        oscillator.start(audioContext.currentTime);
+        oscillator.stop(audioContext.currentTime + 0.5);
+        
+        console.log('Notification sound played');
+      } catch (e) {
+        console.warn('Could not play notification sound:', e);
+      }
+    }
     function hideStandardButton(es) {
       if (es && es.utilAPI && typeof es.utilAPI.hideChatButton === "function") {
         try {
@@ -292,6 +317,12 @@
         font-weight: 600;
         animation: popupSlideIn 0.5s ease, popupBounce 1.5s ease-in-out 0.5s infinite;
         border: 3px solid #c41e3a;
+        cursor: pointer;
+        transition: transform 0.2s ease, box-shadow 0.2s ease;
+      }
+      .chat-popup-tooltip:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 12px 32px rgba(0,0,0,0.4), 0 0 50px rgba(196, 30, 58, 0.3);
       }
       .chat-popup-tooltip::after {
         content: '';
@@ -366,10 +397,11 @@
       btn.addEventListener("click", function () {
         chatClicked = true;  // Mark chat as clicked
         hidePopupTooltip();  // Hide popup when chat is clicked
+        stopPopupInterval(); // Stop showing popups
         
-        if (typeof es.utilAPI.launchChat === "function") {
+        if (typeof embeddedServiceInstance.utilAPI.launchChat === "function") {
           console.log("launchChat() from CTA");
-          var r = es.utilAPI.launchChat();
+          var r = embeddedServiceInstance.utilAPI.launchChat();
           if (r && typeof r.then === "function") {
             r.then(function () {
               console.log("Chat launched (Promise resolved)");
@@ -383,13 +415,33 @@
       });
       document.body.appendChild(btn);
       hideStandardButton(es);
+      embeddedServiceInstance = es; // Store ES instance
       console.log("Custom CTA created with Christmas carousel");
-      // Show popup tooltip after delay if chat not clicked
+      // Start popup interval - show every 60 seconds if chat not clicked
+      startPopupInterval();
+    }
+    // Start interval to show popup periodically
+    function startPopupInterval() {
+      // Show first popup after 5 seconds
       setTimeout(function() {
         if (!chatClicked) {
           showPopupTooltip();
         }
-      }, 5000);  // Show after 5 seconds
+      }, 5000);
+      // Then show every 60 seconds
+      popupInterval = setInterval(function() {
+        if (!chatClicked) {
+          showPopupTooltip();
+        }
+      }, 60000); // 60 seconds = 1 minute
+    }
+    // Stop popup interval
+    function stopPopupInterval() {
+      if (popupInterval) {
+        clearInterval(popupInterval);
+        popupInterval = null;
+        console.log('Popup interval stopped');
+      }
     }
     // Create and show popup tooltip
     function showPopupTooltip() {
@@ -399,16 +451,40 @@
       popup.id = "chat-popup-tooltip";
       popup.className = "chat-popup-tooltip";
       popup.textContent = popupMessage;
+      // Make popup clickable to open chat
+      popup.addEventListener("click", function(e) {
+        // Don't trigger if clicking close button
+        if (e.target.className === 'chat-popup-close') return;
+        
+        chatClicked = true;
+        hidePopupTooltip();
+        stopPopupInterval();
+        
+        if (embeddedServiceInstance && typeof embeddedServiceInstance.utilAPI.launchChat === "function") {
+          console.log("launchChat() from popup");
+          var r = embeddedServiceInstance.utilAPI.launchChat();
+          if (r && typeof r.then === "function") {
+            r.then(function () {
+              console.log("Chat launched from popup (Promise resolved)");
+            }).catch(function (err) {
+              console.error("Error launching chat from popup", err);
+            });
+          }
+        }
+      });
       // Add close button
       var closeBtn = document.createElement("button");
       closeBtn.className = "chat-popup-close";
       closeBtn.textContent = "×";
-      closeBtn.addEventListener("click", function() {
+      closeBtn.addEventListener("click", function(e) {
+        e.stopPropagation(); // Prevent popup click event
         hidePopupTooltip();
-        chatClicked = true;  // Don't show again
+        // Don't set chatClicked to true - allow popup to show again
       });
       popup.appendChild(closeBtn);
       document.body.appendChild(popup);
+      // Play notification sound
+      playNotificationSound();
       // Auto-hide after 10 seconds
       setTimeout(function() {
         hidePopupTooltip();
@@ -490,7 +566,6 @@
   src="https://leapmotor--dev01.sandbox.my.site.com/ESWLPMLeapmotor1760706603231/assets/js/bootstrap.min.js"
   onload="initEmbeddedMessaging()"
 ></script>
-
 </body>
 
 </html>
