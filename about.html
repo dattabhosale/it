@@ -37,16 +37,41 @@
   <script type='text/javascript'>
   function initEmbeddedMessaging() {
     try {
-      embeddedservice_bootstrap.settings.language = "it";
+      // Get country code from URL path
+      var path = window.location.pathname;
+      var pathParts = path.split('/').filter(function(part) { return part.length > 0; });
+      var countryCode = 'en'; // default
+      
+      if (pathParts.length > 0) {
+        countryCode = pathParts[0].toLowerCase();
+      }
+      
+      // Country mapping for prechat fields
+      var countryMapping = {
+        'it': { name: 'Italy', language: 'it', code: 'it' },
+        'es': { name: 'Spain', language: 'es', code: 'es' },
+        'fr': { name: 'France', language: 'fr', code: 'fr' },
+        'de': { name: 'Germany', language: 'de', code: 'de' },
+        'uk': { name: 'United Kingdom', language: 'en', code: 'uk' },
+        'us': { name: 'United States', language: 'en', code: 'us' },
+        'en': { name: 'United States', language: 'en', code: 'en' }
+      };
+      
+      var countryInfo = countryMapping[countryCode] || countryMapping['en'];
+      
+      // Set language dynamically based on country code
+      embeddedservice_bootstrap.settings.language = countryInfo.language;
       embeddedservice_bootstrap.settings.displayHelpButton = true;
       embeddedservice_bootstrap.settings.defaultMinimizedText = "Chat with Leappy";
       embeddedservice_bootstrap.settings.disabledMinimizedText = "Leappy Offline";
       
+      console.log('Detected country code:', countryCode, '| Setting language to:', countryInfo.language);
+      
       window.addEventListener("onEmbeddedMessagingReady", () => {
         embeddedservice_bootstrap.prechatAPI.setHiddenPrechatFields({
-          Country: "Italy",
-          Language: "it",
-          CountryCode: "it",
+          Country: countryInfo.name,
+          Language: countryInfo.language,
+          CountryCode: countryInfo.code,
         });
       });
       
@@ -580,6 +605,5 @@
   })();
 </script>
 <script type="text/javascript" src="https://leapmotor--dev01.sandbox.my.site.com/ESWLPMLeapmotor1760706603231/assets/js/bootstrap.min.js" onload="initEmbeddedMessaging()"></script>
-
 </body>
 </html>
