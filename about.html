@@ -224,7 +224,7 @@
         btn.style.bottom = "24px";
       }
       btn.style.zIndex = "99999";
-      btn.style.padding = "16px 39px";  // Reduced from 20px (20% reduction)
+      btn.style.padding = "14px 39px";  // Reduced from 16px (additional 15% reduction)
       btn.style.fontSize = "22px";
       btn.style.fontWeight = "700";
       btn.style.borderRadius = "999px";  // Unchanged
@@ -555,11 +555,13 @@
             mainBtn.style.display = "none";
             toggleBtn.textContent = toggleMessages.open;
             isChatButtonVisible = false;
+            stopPopupInterval();  // Stop popup when button is hidden
           } else {
             // Show main button
             mainBtn.style.display = "inline-flex";
             toggleBtn.textContent = toggleMessages.close;
             isChatButtonVisible = true;
+            startPopupInterval();  // Restart popup when button is shown
           }
         }
       });
