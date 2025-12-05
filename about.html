@@ -224,7 +224,7 @@
         btn.style.bottom = "24px";
       }
       btn.style.zIndex = "99999";
-      btn.style.padding = "14px 39px";  // Reduced from 16px (additional 15% reduction)
+      btn.style.padding = "11px 39px";  // Reduced from 14px (20% reduction)
       btn.style.fontSize = "22px";
       btn.style.fontWeight = "700";
       btn.style.borderRadius = "999px";  // Unchanged
@@ -248,8 +248,8 @@
       // Leapmotor car images carousel - Rounded rectangle format
       var iconContainer = document.createElement("div");
       iconContainer.style.position = "relative";
-      iconContainer.style.width = "100px";  // Adjusted for rounded rectangle
-      iconContainer.style.height = "70px";  // Adjusted height
+      iconContainer.style.width = "85px";  // Reduced from 100px (proportional to button)
+      iconContainer.style.height = "60px";  // Reduced from 70px
       iconContainer.style.display = "flex";
       iconContainer.style.alignItems = "center";
       iconContainer.style.justifyContent = "center";
@@ -292,18 +292,18 @@
       var logoImg = document.createElement("img");
       logoImg.src = "assets/Leapmotor.png";
       logoImg.alt = "Leapmotor";
-      logoImg.style.height = "50px";  // Significantly increased from 42px
+      logoImg.style.height = "42px";  // Reduced from 50px (proportional)
       logoImg.style.width = "auto";
       logoImg.style.objectFit = "contain";
-      logoImg.style.marginLeft = "16px";  // Increased margin for better spacing
+      logoImg.style.marginLeft = "16px";
       logoImg.style.opacity = "1";
       // Seamless blending with button background
       logoImg.style.filter = "drop-shadow(0 3px 10px rgba(0,0,0,0.2)) brightness(1.25) contrast(1.08)";
-      logoImg.style.background = "transparent";  // Transparent to blend with button
-      logoImg.style.padding = "0";  // No padding for cleaner integration
-      logoImg.style.borderRadius = "0";  // No border radius
-      logoImg.style.border = "none";  // No border
-      logoImg.style.boxShadow = "none";  // No box shadow
+      logoImg.style.background = "transparent";
+      logoImg.style.padding = "0";
+      logoImg.style.borderRadius = "0";
+      logoImg.style.border = "none";
+      logoImg.style.boxShadow = "none";
       
       btn.appendChild(iconContainer);
       btn.appendChild(textSpan);
@@ -732,6 +732,5 @@
   })();
 </script>
 <script type="text/javascript" src="https://leapmotor--dev01.sandbox.my.site.com/ESWLPMLeapmotor1760706603231/assets/js/bootstrap.min.js" onload="initEmbeddedMessaging()"></script>
-
 </body>
 </html>
