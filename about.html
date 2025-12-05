@@ -109,9 +109,9 @@
         'es': 'Habla con Agentforce!',
         'fr': 'Parlez avec Agentforce!',
         'de': 'Sprechen Sie mit Agentforce!',
-        'uk': 'Talk with Agentforce!',
-        'us': 'Talk with Agentforce!',
-        'en': 'Talk with Agentforce!'
+        'uk': 'Chat with Agentforce!',
+        'us': 'Chat with Agentforce!',
+        'en': 'Chat with Agentforce!'
       };
       return messages[countryCode] || messages['en'];
     }
@@ -229,10 +229,11 @@
       
       // Car image URLs - Replace these with your actual Leapmotor car images
       var carImages = [
-        { name: 'C10', url: 'assets/model-a.jpg'},
-        { name: 'B10', url: 'assets/model-b.jpg'},
-        { name: 'T03', url: 'assets/model-c.jpg'},
-        { name: 'B05', url: 'assets/car-hero.jpg'}
+        { name: 'model1', url: 'assets/model1.png'},
+        { name: 'model2', url: 'assets/model2.png'},
+        { name: 'model3', url: 'assets/model3.png'},
+        { name: 'model4', url: 'assets/model4.png'},
+        { name: 'model5', url: 'assets/model5.png'}
       ];
       var currentCarIndex = 0;
       
@@ -259,8 +260,8 @@
       
       // Stellantis logo - Replace URL with actual logo
       var logoImg = document.createElement("img");
-      logoImg.src = "assets/Stellantis-logo.jpg";
-      logoImg.alt = "Stellantis";
+      logoImg.src = "assets/Leapmotor.png";
+      logoImg.alt = "Leapmotor";
       logoImg.style.height = "28px";  // Slightly larger
       logoImg.style.width = "auto";
       logoImg.style.objectFit = "contain";
