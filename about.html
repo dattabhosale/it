@@ -61,9 +61,8 @@
       
       // Set language dynamically based on country code
       embeddedservice_bootstrap.settings.language = countryInfo.language;
-      embeddedservice_bootstrap.settings.displayHelpButton = true;
-      embeddedservice_bootstrap.settings.defaultMinimizedText = "Chat with Leappy";
-      embeddedservice_bootstrap.settings.disabledMinimizedText = "Leappy Offline";
+      embeddedservice_bootstrap.settings.shouldOpenLinksInSameTab = true;
+      embeddedservice_bootstrap.settings.hideChatButtonOnLoad = true;
       
       console.log('Detected country code:', countryCode, '| Setting language to:', countryInfo.language);
       
