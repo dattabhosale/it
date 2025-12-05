@@ -224,8 +224,8 @@
         btn.style.bottom = "24px";
       }
       btn.style.zIndex = "99999";
-      btn.style.padding = "25px 39px";  // Reduced from 28px 43px (10% smaller)
-      btn.style.fontSize = "22px";  // Reduced from 24px (10% smaller)
+      btn.style.padding = "20px 39px";  // Reduced vertical padding from 25px to 20px (smaller from top)
+      btn.style.fontSize = "22px";
       btn.style.fontWeight = "700";
       btn.style.borderRadius = "999px";  // Unchanged
       btn.style.border = "none";
@@ -245,15 +245,15 @@
       btn.style.minWidth = "284px";  // Reduced from 315px (10% smaller)
       btn.style.minHeight = "77px";  // Reduced from 85px (10% smaller)
       
-      // Leapmotor car images carousel - Much bigger, blended with button
+      // Leapmotor car images carousel - Rounded rectangle format
       var iconContainer = document.createElement("div");
       iconContainer.style.position = "relative";
-      iconContainer.style.width = "120px";  // Significantly increased from 95px
-      iconContainer.style.height = "90px";  // Significantly increased from 70px
+      iconContainer.style.width = "100px";  // Adjusted for rounded rectangle
+      iconContainer.style.height = "70px";  // Adjusted height
       iconContainer.style.display = "flex";
       iconContainer.style.alignItems = "center";
       iconContainer.style.justifyContent = "center";
-      iconContainer.style.overflow = "visible";  // Changed to visible for better blending
+      iconContainer.style.overflow = "hidden";
       
       // Car image URLs - Replace these with your actual Leapmotor car images
       var carImages = [
@@ -273,13 +273,14 @@
       carImg.style.objectFit = "contain";
       carImg.style.display = "block";
       carImg.style.transition = "opacity 0.5s ease, transform 0.3s ease";
-      // Seamless blending with button background - no white background
-      carImg.style.filter = "drop-shadow(0 4px 12px rgba(0,0,0,0.25)) brightness(1.2) contrast(1.1) saturate(1.15)";
-      carImg.style.background = "transparent";  // Transparent to blend with button
-      carImg.style.borderRadius = "0";  // No border radius for cleaner look
-      carImg.style.padding = "0";  // No padding
-      carImg.style.border = "none";  // No border
-      carImg.style.boxShadow = "none";  // No box shadow
+      // Rounded rectangle format with subtle background
+      carImg.style.filter = "drop-shadow(0 3px 8px rgba(0,0,0,0.2)) brightness(1.15) contrast(1.08) saturate(1.1)";
+      carImg.style.background = "rgba(255, 255, 255, 0.15)";  // Subtle semi-transparent white
+      carImg.style.borderRadius = "16px";  // Rounded rectangle
+      carImg.style.padding = "8px";  // Padding for breathing room
+      carImg.style.border = "1px solid rgba(255, 255, 255, 0.2)";
+      carImg.style.boxShadow = "inset 0 1px 2px rgba(255,255,255,0.3)";
+      carImg.style.backdropFilter = "blur(10px)";  // Glassmorphism effect
       iconContainer.appendChild(carImg);
       
       // Text content with localized message
