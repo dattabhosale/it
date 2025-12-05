@@ -224,14 +224,14 @@
         btn.style.bottom = "24px";
       }
       btn.style.zIndex = "99999";
-      btn.style.padding = "20px 39px";  // Reduced vertical padding from 25px to 20px (smaller from top)
+      btn.style.padding = "16px 39px";  // Reduced from 20px (20% reduction)
       btn.style.fontSize = "22px";
       btn.style.fontWeight = "700";
       btn.style.borderRadius = "999px";  // Unchanged
       btn.style.border = "none";
       btn.style.cursor = "pointer";
       btn.style.boxShadow = "0 12px 32px rgba(0,0,0,0.3), 0 0 40px rgba(100, 160, 40, 0.4)";
-      btn.style.background = "linear-gradient(135deg, #64a028 0%, #7bc043 33%, #00d4ff 66%, #64a028 100%)";
+      btn.style.background = "#64a028";  // Solid green color
       btn.style.backgroundSize = "200% 200%";
       btn.style.color = "#ffffff";
       btn.style.display = "inline-flex";
@@ -455,7 +455,8 @@
         }, 2000);
       }
       
-      setInterval(createEnergyParticle, 1000);  // Slower than snowflakes
+      // Removed energy particles animation for cleaner look
+      // setInterval(createEnergyParticle, 1000);
       
       btn.addEventListener("mouseenter", function () {
         btn.style.transform = "scale(1.08)";
