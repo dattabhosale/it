@@ -35,6 +35,7 @@
 
   <script src="js/main.js"></script>
   <script type='text/javascript'>
+  <script type='text/javascript'>
   function initEmbeddedMessaging() {
     try {
       // Get country code from URL path
@@ -130,14 +131,30 @@
       return popupMessages[countryCode] || popupMessages['en'];
     }
     
+    // Get localized toggle button messages
+    function getLocalizedToggleMessages(countryCode) {
+      var toggleMessages = {
+        'it': { open: 'Apri Chat', close: 'Chiudi Chat' },
+        'es': { open: 'Abrir Chat', close: 'Cerrar Chat' },
+        'fr': { open: 'Ouvrir Chat', close: 'Fermer Chat' },
+        'de': { open: 'Chat Öffnen', close: 'Chat Schließen' },
+        'uk': { open: 'Open Chat', close: 'Close Chat' },
+        'us': { open: 'Open Chat', close: 'Close Chat' },
+        'en': { open: 'Open Chat', close: 'Close Chat' }
+      };
+      return toggleMessages[countryCode] || toggleMessages['en'];
+    }
+    
     var detectedCountry = getCountryFromURL();
     var buttonMessage = getLocalizedMessage(detectedCountry);
     var popupMessage = getLocalizedPopupMessage(detectedCountry);
+    var toggleMessages = getLocalizedToggleMessages(detectedCountry);
     console.log('Detected country:', detectedCountry, '| Message:', buttonMessage);
     
     var chatClicked = false;
     var popupInterval = null;
     var embeddedServiceInstance = null;
+    var isChatButtonVisible = true;  // Track button visibility
     
     // Create notification sound using Web Audio API
     function playNotificationSound() {
@@ -196,15 +213,15 @@
       // Responsive positioning - smaller margins on smaller screens
       if (window.innerWidth <= 480) {
         // Mobile
-        btn.style.right = "8px";
+        btn.style.right = "6px";
         btn.style.bottom = "12px";
       } else if (window.innerWidth <= 768) {
         // Tablet
-        btn.style.right = "10px";
+        btn.style.right = "8px";
         btn.style.bottom = "16px";
       } else {
         // Desktop
-        btn.style.right = "14px";
+        btn.style.right = "10px";
         btn.style.bottom = "24px";
       }
       btn.style.zIndex = "99999";
@@ -214,8 +231,8 @@
       btn.style.borderRadius = "999px";
       btn.style.border = "none";
       btn.style.cursor = "pointer";
-      btn.style.boxShadow = "0 12px 32px rgba(0,0,0,0.3), 0 0 40px rgba(100, 160, 40, 0.3)";
-      btn.style.background = "linear-gradient(135deg, #0066cc 0%, #64a028 33%, #00d4ff 66%, #0066cc 100%)";
+      btn.style.boxShadow = "0 12px 32px rgba(0,0,0,0.3), 0 0 40px rgba(100, 160, 40, 0.4)";
+      btn.style.background = "linear-gradient(135deg, #64a028 0%, #7bc043 33%, #00d4ff 66%, #64a028 100%)";
       btn.style.backgroundSize = "200% 200%";
       btn.style.color = "#ffffff";
       btn.style.display = "inline-flex";
@@ -470,7 +487,78 @@
       embeddedServiceInstance = es;
       console.log("Custom CTA created with Leapmotor electric car carousel");
       
+      // Create toggle button
+      createToggleButton();
+      
       startPopupInterval();
+    }
+    
+    // Create toggle button to show/hide main chat button
+    function createToggleButton() {
+      var toggleBtn = document.createElement("button");
+      toggleBtn.id = "chat-toggle-btn";
+      toggleBtn.textContent = toggleMessages.close;
+      
+      // Positioning
+      toggleBtn.style.position = "fixed";
+      if (window.innerWidth <= 480) {
+        toggleBtn.style.right = "6px";
+        toggleBtn.style.bottom = "105px";  // Above main button
+      } else if (window.innerWidth <= 768) {
+        toggleBtn.style.right = "8px";
+        toggleBtn.style.bottom = "110px";
+      } else {
+        toggleBtn.style.right = "10px";
+        toggleBtn.style.bottom = "115px";
+      }
+      
+      // Styling
+      toggleBtn.style.zIndex = "99999";
+      toggleBtn.style.padding = "8px 16px";
+      toggleBtn.style.fontSize = "14px";
+      toggleBtn.style.fontWeight = "600";
+      toggleBtn.style.borderRadius = "20px";
+      toggleBtn.style.border = "2px solid #64a028";
+      toggleBtn.style.cursor = "pointer";
+      toggleBtn.style.backgroundColor = "#ffffff";
+      toggleBtn.style.color = "#64a028";
+      toggleBtn.style.boxShadow = "0 4px 12px rgba(0,0,0,0.2)";
+      toggleBtn.style.transition = "all 0.3s ease";
+      toggleBtn.style.fontFamily = "'Arial', sans-serif";
+      
+      // Hover effect
+      toggleBtn.addEventListener("mouseenter", function() {
+        toggleBtn.style.backgroundColor = "#64a028";
+        toggleBtn.style.color = "#ffffff";
+        toggleBtn.style.transform = "scale(1.05)";
+      });
+      
+      toggleBtn.addEventListener("mouseleave", function() {
+        toggleBtn.style.backgroundColor = "#ffffff";
+        toggleBtn.style.color = "#64a028";
+        toggleBtn.style.transform = "scale(1)";
+      });
+      
+      // Toggle functionality
+      toggleBtn.addEventListener("click", function() {
+        var mainBtn = document.getElementById("leap-chat-cta");
+        if (mainBtn) {
+          if (isChatButtonVisible) {
+            // Hide main button
+            mainBtn.style.display = "none";
+            toggleBtn.textContent = toggleMessages.open;
+            isChatButtonVisible = false;
+          } else {
+            // Show main button
+            mainBtn.style.display = "inline-flex";
+            toggleBtn.textContent = toggleMessages.close;
+            isChatButtonVisible = true;
+          }
+        }
+      });
+      
+      document.body.appendChild(toggleBtn);
+      console.log("Toggle button created");
     }
     
     function startPopupInterval() {
