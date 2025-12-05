@@ -506,13 +506,13 @@
       toggleBtn.style.position = "fixed";
       if (window.innerWidth <= 480) {
         toggleBtn.style.right = "6px";
-        toggleBtn.style.bottom = "105px";  // Above main button
+        toggleBtn.style.bottom = "95px";  // Moved up from 105px
       } else if (window.innerWidth <= 768) {
         toggleBtn.style.right = "8px";
-        toggleBtn.style.bottom = "110px";
+        toggleBtn.style.bottom = "100px";  // Moved up from 110px
       } else {
         toggleBtn.style.right = "10px";
-        toggleBtn.style.bottom = "115px";
+        toggleBtn.style.bottom = "105px";  // Moved up from 115px
       }
       
       // Styling
@@ -544,6 +544,9 @@
       
       // Toggle functionality
       toggleBtn.addEventListener("click", function() {
+        // Hide popup when toggle button is clicked
+        hidePopupTooltip();
+        
         var mainBtn = document.getElementById("leap-chat-cta");
         if (mainBtn) {
           if (isChatButtonVisible) {
