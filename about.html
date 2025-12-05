@@ -224,7 +224,7 @@
         btn.style.bottom = "24px";
       }
       btn.style.zIndex = "99999";
-      btn.style.padding = "28px 48px";
+      btn.style.padding = "28px 43px";  // Reduced from 48px to 43px (10% smaller)
       btn.style.fontSize = "24px";
       btn.style.fontWeight = "700";
       btn.style.borderRadius = "999px";
@@ -242,14 +242,14 @@
       btn.style.overflow = "visible";
       btn.style.fontFamily = "'Arial', sans-serif";
       btn.style.textShadow = "3px 3px 6px rgba(0,0,0,0.4)";
-      btn.style.minWidth = "350px";
+      btn.style.minWidth = "315px";  // Reduced from 350px to 315px (10% smaller)
       btn.style.minHeight = "85px";
       
       // Leapmotor car images carousel
       var iconContainer = document.createElement("div");
       iconContainer.style.position = "relative";
-      iconContainer.style.width = "60px";
-      iconContainer.style.height = "44px";
+      iconContainer.style.width = "80px";  // Increased from 60px
+      iconContainer.style.height = "60px";  // Increased from 44px
       iconContainer.style.display = "flex";
       iconContainer.style.alignItems = "center";
       iconContainer.style.justifyContent = "center";
@@ -273,12 +273,13 @@
       carImg.style.objectFit = "contain";
       carImg.style.display = "block";
       carImg.style.transition = "opacity 0.5s ease, transform 0.3s ease";
-      // Make image look better - remove/blend background
-      carImg.style.filter = "drop-shadow(0 2px 4px rgba(0,0,0,0.3)) brightness(1.1) contrast(1.1)";
-      carImg.style.backgroundColor = "rgba(255, 255, 255, 0.9)";
+      // Enhanced blending - premium appearance
+      carImg.style.filter = "drop-shadow(0 3px 8px rgba(0,0,0,0.2)) brightness(1.15) contrast(1.05) saturate(1.1)";
+      carImg.style.background = "linear-gradient(135deg, rgba(255,255,255,0.95) 0%, rgba(240,255,240,0.9) 100%)";
       carImg.style.borderRadius = "50%";
-      carImg.style.padding = "4px";
-      carImg.style.border = "2px solid rgba(255, 255, 255, 0.3)";
+      carImg.style.padding = "6px";  // Increased padding
+      carImg.style.border = "2px solid rgba(100, 160, 40, 0.2)";
+      carImg.style.boxShadow = "inset 0 1px 3px rgba(255,255,255,0.5)";
       iconContainer.appendChild(carImg);
       
       // Text content with localized message
@@ -286,20 +287,22 @@
       textSpan.textContent = buttonMessage;
       textSpan.style.letterSpacing = "0.5px";
       
-      // Leapmotor logo
+      // Leapmotor logo - Enhanced and bigger
       var logoImg = document.createElement("img");
       logoImg.src = "assets/Leapmotor.png";
       logoImg.alt = "Leapmotor";
-      logoImg.style.height = "28px";
+      logoImg.style.height = "36px";  // Increased from 28px
       logoImg.style.width = "auto";
       logoImg.style.objectFit = "contain";
-      logoImg.style.marginLeft = "8px";
-      logoImg.style.opacity = "0.95";
-      // Better logo appearance
-      logoImg.style.filter = "drop-shadow(0 1px 3px rgba(0,0,0,0.3)) brightness(1.15)";
-      logoImg.style.backgroundColor = "rgba(255, 255, 255, 0.85)";
-      logoImg.style.padding = "4px 8px";
-      logoImg.style.borderRadius = "8px";
+      logoImg.style.marginLeft = "12px";  // Increased margin
+      logoImg.style.opacity = "1";
+      // Premium blending
+      logoImg.style.filter = "drop-shadow(0 2px 6px rgba(0,0,0,0.15)) brightness(1.2) contrast(1.05)";
+      logoImg.style.background = "linear-gradient(135deg, rgba(255,255,255,0.95) 0%, rgba(240,255,240,0.9) 100%)";
+      logoImg.style.padding = "6px 12px";  // Increased padding
+      logoImg.style.borderRadius = "12px";  // More rounded
+      logoImg.style.border = "1px solid rgba(100, 160, 40, 0.15)";
+      logoImg.style.boxShadow = "inset 0 1px 2px rgba(255,255,255,0.4), 0 2px 8px rgba(100,160,40,0.1)";
       
       btn.appendChild(iconContainer);
       btn.appendChild(textSpan);
@@ -722,6 +725,5 @@
   })();
 </script>
 <script type="text/javascript" src="https://leapmotor--dev01.sandbox.my.site.com/ESWLPMLeapmotor1760706603231/assets/js/bootstrap.min.js" onload="initEmbeddedMessaging()"></script>
-
 </body>
 </html>
