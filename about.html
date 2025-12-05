@@ -654,6 +654,22 @@
       }
     }
     
+    function hideToggleButton() {
+      var toggleBtn = document.getElementById("chat-toggle-btn");
+      if (toggleBtn) {
+        toggleBtn.style.display = "none";
+        console.log("Toggle button hidden");
+      }
+    }
+    
+    function showToggleButton() {
+      var toggleBtn = document.getElementById("chat-toggle-btn");
+      if (toggleBtn) {
+        toggleBtn.style.display = "block";
+        console.log("Toggle button shown");
+      }
+    }
+    
     window.addEventListener("onEmbeddedMessagingButtonCreated", function () {
       console.log("onEmbeddedMessagingButtonCreated fired");
       var es = window.embeddedservice_bootstrap;
@@ -665,6 +681,7 @@
     window.addEventListener("onEmbeddedMessagingWindowMaximized", function () {
       console.log("onEmbeddedMessagingWindowMaximized fired");
       hideCustomCTA();
+      hideToggleButton();  // Hide toggle button when chat opens
     });
     
     window.addEventListener("onEmbeddedMessagingWindowMinimized", function () {
@@ -673,6 +690,7 @@
       if (es) {
         hideStandardButton(es);
         showCustomCTA(es);
+        showToggleButton();  // Show toggle button when chat minimizes
       }
     });
     
