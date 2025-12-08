@@ -35,38 +35,23 @@
 
   <script src="js/main.js"></script>
   <script type='text/javascript'>
+  /**
+   * Initialize Salesforce Embedded Messaging with country-specific settings
+   */
   function initEmbeddedMessaging() {
     try {
-      // Get country code from URL path
-      var path = window.location.pathname;
-      var pathParts = path.split('/').filter(function(part) { return part.length > 0; });
-      var countryCode = 'en'; // default
+      const countryCode = getCountryCodeFromPath();
+      const countryInfo = getCountryInfo(countryCode);
       
-      if (pathParts.length > 0) {
-        countryCode = pathParts[0].toLowerCase();
-      }
-      
-      // Country mapping for prechat fields
-      var countryMapping = {
-        'it': { name: 'Italy', language: 'it', code: 'it' },
-        'es': { name: 'Spain', language: 'es', code: 'es' },
-        'fr': { name: 'France', language: 'fr', code: 'fr' },
-        'de': { name: 'Germany', language: 'de', code: 'de' },
-        'uk': { name: 'United Kingdom', language: 'en', code: 'uk' },
-        'us': { name: 'United States', language: 'en', code: 'us' },
-        'en': { name: 'United States', language: 'en', code: 'en' }
-      };
-      
-      var countryInfo = countryMapping[countryCode] || countryMapping['en'];
-      
-      // Set language dynamically based on country code
+      // Configure embedded service settings
       embeddedservice_bootstrap.settings.language = countryInfo.language;
       embeddedservice_bootstrap.settings.shouldOpenLinksInSameTab = true;
       embeddedservice_bootstrap.settings.hideChatButtonOnLoad = true;
       
       console.log('Detected country code:', countryCode, '| Setting language to:', countryInfo.language);
       
-      window.addEventListener("onEmbeddedMessagingReady", () => {
+      // Set prechat fields when ready
+      window.addEventListener("onEmbeddedMessagingReady", function() {
         embeddedservice_bootstrap.prechatAPI.setHiddenPrechatFields({
           Country: countryInfo.name,
           Language: countryInfo.language,
@@ -74,6 +59,7 @@
         });
       });
       
+      // Initialize embedded service
       embeddedservice_bootstrap.init(
         "00DMA000003XnGM",
         "LPM_Leapmotor",
@@ -83,28 +69,82 @@
         }
       );
     } catch (err) {
-      console.error("Error loading Embedded Messaging: ", err);
+      console.error("Error loading Embedded Messaging:", err);
     }
   }
-  
-  (function () {
-    console.log("Test custom chat button with Leapmotor carousel");
+  /**
+   * Extract country code from URL pathname
+   * @returns {string} Country code (defaults to 'en')
+   */
+  function getCountryCodeFromPath() {
+    const pathParts = window.location.pathname
+      .split('/')
+      .filter(function(part) { return part.length > 0; });
     
-    // Get country code from URL path
-    function getCountryFromURL() {
-      var path = window.location.pathname;
-      var pathParts = path.split('/').filter(function(part) { return part.length > 0; });
-      
-      if (pathParts.length > 0) {
-        var countryCode = pathParts[0].toLowerCase();
-        return countryCode;
-      }
-      return 'en';
-    }
+    return pathParts.length > 0 ? pathParts[0].toLowerCase() : 'en';
+  }
+  /**
+   * Get country information based on country code
+   * @param {string} countryCode - Two-letter country code
+   * @returns {Object} Country information object
+   */
+  function getCountryInfo(countryCode) {
+    const COUNTRY_MAPPING = {
+      'it': { name: 'Italy', language: 'it', code: 'it' },
+      'es': { name: 'Spain', language: 'es', code: 'es' },
+      'fr': { name: 'France', language: 'fr', code: 'fr' },
+      'de': { name: 'Germany', language: 'de', code: 'de' },
+      'uk': { name: 'United Kingdom', language: 'en_US', code: 'uk' },
+      'us': { name: 'United States', language: 'en_US', code: 'us' },
+      'en': { name: 'United States', language: 'en_US', code: 'en' }
+    };
     
-    // Get localized message based on country
-    function getLocalizedMessage(countryCode) {
-      var messages = {
+    return COUNTRY_MAPPING[countryCode] || COUNTRY_MAPPING['en'];
+  }
+  /**
+   * Custom Chat Button Module
+   * Handles creation and management of custom Leapmotor chat button
+   */
+  (function() {
+    'use strict';
+    
+    // ============================================================================
+    // CONSTANTS
+    // ============================================================================
+    
+    const ELEMENT_IDS = {
+      CHAT_BUTTON: 'leap-chat-cta',
+      TOGGLE_BUTTON: 'chat-toggle-btn',
+      STYLES: 'leap-chat-styles'
+    };
+    
+    const BREAKPOINTS = {
+      MOBILE: 480,
+      TABLET: 768
+    };
+    
+    const TIMING = {
+      CAROUSEL_INTERVAL: 3000,
+      FADE_DURATION: 500,
+      POLLING_INTERVAL: 200,
+      MAX_POLLING_ATTEMPTS: 50
+    };
+    
+    const COLORS = {
+      PRIMARY: '#64a028',
+      WHITE: '#ffffff'
+    };
+    
+    const CAR_MODELS = [
+      { name: 'model1', url: 'assets/model1.png' },
+      { name: 'model2', url: 'assets/model2.png' },
+      { name: 'model3', url: 'assets/model3.png' },
+      { name: 'model4', url: 'assets/model4.png' },
+      { name: 'model5', url: 'assets/model5.png' }
+    ];
+    
+    const LOCALIZATION = {
+      MESSAGES: {
         'it': 'Chatta con me!',
         'es': '¡Chatea conmigo!',
         'fr': 'Discutez avec moi!',
@@ -112,27 +152,8 @@
         'uk': 'Chat with me!',
         'us': 'Chat with me!',
         'en': 'Chat with me!'
-      };
-      return messages[countryCode] || messages['en'];
-    }
-    
-    // Get localized popup message
-    function getLocalizedPopupMessage(countryCode) {
-      var popupMessages = {
-        'it': '👋 Ciao! Hai bisogno di aiuto? Prova la nostra chat!',
-        'es': '👋 ¡Hola! ¿Necesitas ayuda? ¡Prueba nuestro chat!',
-        'fr': '👋 Bonjour! Besoin d\'aide? Essayez notre chat!',
-        'de': '👋 Hallo! Brauchen Sie Hilfe? Probieren Sie unseren Chat!',
-        'uk': '👋 Hi! Need help? Try our chat!',
-        'us': '👋 Hi! Need help! Try our chat!',
-        'en': '👋 Hi! Need help? Try our chat!'
-      };
-      return popupMessages[countryCode] || popupMessages['en'];
-    }
-    
-    // Get localized toggle button messages
-    function getLocalizedToggleMessages(countryCode) {
-      var toggleMessages = {
+      },
+      TOGGLE: {
         'it': { open: 'Massimizza', close: 'Minimizza' },
         'es': { open: 'Maximizar', close: 'Minimizar' },
         'fr': { open: 'Maximiser', close: 'Minimiser' },
@@ -140,194 +161,72 @@
         'uk': { open: 'Maximize', close: 'Minimize' },
         'us': { open: 'Maximize', close: 'Minimize' },
         'en': { open: 'Maximize', close: 'Minimize' }
+      }
+    };
+    
+    // ============================================================================
+    // STATE
+    // ============================================================================
+    
+    const state = {
+      chatClicked: false,
+      isChatButtonVisible: true,
+      embeddedServiceInstance: null,
+      currentCarIndex: 0,
+      carouselInterval: null,
+      countryCode: getCountryCodeFromPath(),
+      localization: null
+    };
+    
+    // Initialize localization
+    state.localization = {
+      message: LOCALIZATION.MESSAGES[state.countryCode] || LOCALIZATION.MESSAGES['en'],
+      toggle: LOCALIZATION.TOGGLE[state.countryCode] || LOCALIZATION.TOGGLE['en']
+    };
+    
+    console.log('Detected country:', state.countryCode, '| Message:', state.localization.message);
+    
+    // ============================================================================
+    // UTILITY FUNCTIONS
+    // ============================================================================
+    
+    /**
+     * Get responsive positioning based on screen width
+     * @returns {Object} Position object with right and bottom values
+     */
+    function getResponsivePosition(isToggle) {
+      const width = window.innerWidth;
+      const positions = {
+        mobile: { right: '6px', bottom: isToggle ? '95px' : '12px' },
+        tablet: { right: '8px', bottom: isToggle ? '100px' : '16px' },
+        desktop: { right: '10px', bottom: isToggle ? '105px' : '24px' }
       };
-      return toggleMessages[countryCode] || toggleMessages['en'];
+      
+      if (width <= BREAKPOINTS.MOBILE) return positions.mobile;
+      if (width <= BREAKPOINTS.TABLET) return positions.tablet;
+      return positions.desktop;
     }
     
-    var detectedCountry = getCountryFromURL();
-    var buttonMessage = getLocalizedMessage(detectedCountry);
-    var popupMessage = getLocalizedPopupMessage(detectedCountry);
-    var toggleMessages = getLocalizedToggleMessages(detectedCountry);
-    console.log('Detected country:', detectedCountry, '| Message:', buttonMessage);
-    
-    var chatClicked = false;
-    var popupInterval = null;
-    var embeddedServiceInstance = null;
-    var isChatButtonVisible = true;  // Track button visibility
-    
-    // Create notification sound using Web Audio API
-    function playNotificationSound() {
-      try {
-        var audioContext = new (window.AudioContext || window.webkitAudioContext)();
-        var oscillator = audioContext.createOscillator();
-        var gainNode = audioContext.createGain();
-        
-        oscillator.connect(gainNode);
-        gainNode.connect(audioContext.destination);
-        
-        oscillator.frequency.value = 800;
-        oscillator.type = 'sine';
-        
-        gainNode.gain.setValueAtTime(0.3, audioContext.currentTime);
-        gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.5);
-        
-        oscillator.start(audioContext.currentTime);
-        oscillator.stop(audioContext.currentTime + 0.5);
-        
-        console.log('Notification sound played');
-      } catch (e) {
-        console.warn('Could not play notification sound:', e);
-      }
+    /**
+     * Apply multiple styles to an element
+     * @param {HTMLElement} element - Target element
+     * @param {Object} styles - Styles object
+     */
+    function applyStyles(element, styles) {
+      Object.keys(styles).forEach(function(key) {
+        element.style[key] = styles[key];
+      });
     }
     
-    function hideStandardButton(es) {
-      if (es && es.utilAPI && typeof es.utilAPI.hideChatButton === "function") {
-        try {
-          es.utilAPI.hideChatButton();
-          console.log("hideChatButton() called");
-        } catch (e) {
-          console.warn("Error calling hideChatButton()", e);
-        }
-      }
-    }
-    
-    function showCustomCTA(es) {
-      if (!es || !es.utilAPI) {
-        console.warn("utilAPI not available");
-        return;
-      }
+    /**
+     * Create and append stylesheet to document head
+     */
+    function injectStyles() {
+      if (document.getElementById(ELEMENT_IDS.STYLES)) return;
       
-      var existing = document.getElementById("leap-chat-cta");
-      if (existing) {
-        existing.style.display = "inline-flex";
-        hideStandardButton(es);
-        console.log("Custom CTA shown again");
-        return;
-      }
-      
-      // Create button container
-      var btn = document.createElement("button");
-      btn.id = "leap-chat-cta";
-      btn.style.position = "fixed";
-      // Responsive positioning - smaller margins on smaller screens
-      if (window.innerWidth <= 480) {
-        // Mobile
-        btn.style.right = "6px";
-        btn.style.bottom = "12px";
-      } else if (window.innerWidth <= 768) {
-        // Tablet
-        btn.style.right = "8px";
-        btn.style.bottom = "16px";
-      } else {
-        // Desktop
-        btn.style.right = "10px";
-        btn.style.bottom = "24px";
-      }
-      btn.style.zIndex = "99999";
-      btn.style.padding = "11px 39px";  // Reduced from 14px (20% reduction)
-      btn.style.fontSize = "22px";
-      btn.style.fontWeight = "700";
-      btn.style.borderRadius = "999px";  // Unchanged
-      btn.style.border = "none";
-      btn.style.cursor = "pointer";
-      btn.style.boxShadow = "0 12px 32px rgba(0,0,0,0.3), 0 0 40px rgba(100, 160, 40, 0.4)";
-      btn.style.background = "#64a028";  // Solid green color
-      btn.style.backgroundSize = "200% 200%";
-      btn.style.color = "#ffffff";
-      btn.style.display = "inline-flex";
-      btn.style.alignItems = "center";
-      btn.style.justifyContent = "center";
-      btn.style.gap = "18px";
-      btn.style.transition = "all 0.3s ease";
-      btn.style.overflow = "visible";
-      btn.style.fontFamily = "'Arial', sans-serif";
-      btn.style.textShadow = "3px 3px 6px rgba(0,0,0,0.4)";
-      btn.style.minWidth = "284px";  // Reduced from 315px (10% smaller)
-      btn.style.minHeight = "77px";  // Reduced from 85px (10% smaller)
-      
-      // Leapmotor car images carousel - Rounded rectangle format
-      var iconContainer = document.createElement("div");
-      iconContainer.style.position = "relative";
-      iconContainer.style.width = "85px";  // Reduced from 100px (proportional to button)
-      iconContainer.style.height = "60px";  // Reduced from 70px
-      iconContainer.style.display = "flex";
-      iconContainer.style.alignItems = "center";
-      iconContainer.style.justifyContent = "center";
-      iconContainer.style.overflow = "hidden";
-      
-      // Car image URLs - Replace these with your actual Leapmotor car images
-      var carImages = [
-        { name: 'model1', url: 'assets/model1.png'},
-        { name: 'model2', url: 'assets/model2.png'},
-        { name: 'model3', url: 'assets/model3.png'},
-        { name: 'model4', url: 'assets/model4.png'},
-        { name: 'model5', url: 'assets/model5.png'}
-      ];
-      var currentCarIndex = 0;
-      
-      var carImg = document.createElement("img");
-      carImg.src = carImages[0].url;
-      carImg.alt = carImages[0].name;
-      carImg.style.width = "100%";
-      carImg.style.height = "100%";
-      carImg.style.objectFit = "contain";
-      carImg.style.display = "block";
-      carImg.style.transition = "opacity 0.5s ease, transform 0.3s ease";
-      // Rounded rectangle format with subtle background
-      carImg.style.filter = "drop-shadow(0 3px 8px rgba(0,0,0,0.2)) brightness(1.15) contrast(1.08) saturate(1.1)";
-      carImg.style.background = "rgba(255, 255, 255, 0.15)";  // Subtle semi-transparent white
-      carImg.style.borderRadius = "16px";  // Rounded rectangle
-      carImg.style.padding = "8px";  // Padding for breathing room
-      carImg.style.border = "1px solid rgba(255, 255, 255, 0.2)";
-      carImg.style.boxShadow = "inset 0 1px 2px rgba(255,255,255,0.3)";
-      carImg.style.backdropFilter = "blur(10px)";  // Glassmorphism effect
-      iconContainer.appendChild(carImg);
-      
-      // Text content with localized message
-      var textSpan = document.createElement("span");
-      textSpan.textContent = buttonMessage;
-      textSpan.style.letterSpacing = "0.5px";
-      
-      // Leapmotor logo - Much bigger, seamlessly blended
-      var logoImg = document.createElement("img");
-      logoImg.src = "assets/Leapmotor.png";
-      logoImg.alt = "Leapmotor";
-      logoImg.style.height = "42px";  // Reduced from 50px (proportional)
-      logoImg.style.width = "auto";
-      logoImg.style.objectFit = "contain";
-      logoImg.style.marginLeft = "16px";
-      logoImg.style.opacity = "1";
-      // Seamless blending with button background
-      logoImg.style.filter = "drop-shadow(0 3px 10px rgba(0,0,0,0.2)) brightness(1.25) contrast(1.08)";
-      logoImg.style.background = "transparent";
-      logoImg.style.padding = "0";
-      logoImg.style.borderRadius = "0";
-      logoImg.style.border = "none";
-      logoImg.style.boxShadow = "none";
-      
-      btn.appendChild(iconContainer);
-      btn.appendChild(textSpan);
-      btn.appendChild(logoImg);
-      
-      // Add CSS animations
-      var style = document.createElement("style");
+      const style = document.createElement('style');
+      style.id = ELEMENT_IDS.STYLES;
       style.textContent = `
-        @keyframes carFadeIn {
-          0% { opacity: 0; transform: scale(0.8); }
-          100% { opacity: 1; transform: scale(1); }
-        }
-        
-        @keyframes carFadeOut {
-          0% { opacity: 1; transform: scale(1); }
-          100% { opacity: 0; transform: scale(0.8); }
-        }
-        
-        @keyframes energyParticle {
-          0% { transform: translateY(-10px) translateX(0) rotate(0deg); opacity: 0; }
-          50% { opacity: 1; }
-          100% { transform: translateY(10px) translateX(5px) rotate(180deg); opacity: 0; }
-        }
-        
         @keyframes energyFlow {
           0% { background-position: 0% 50%; }
           50% { background-position: 100% 50%; }
@@ -335,402 +234,440 @@
         }
         
         @keyframes electricPulse {
-          0%, 100% { transform: scale(1); box-shadow: 0 12px 32px rgba(0,0,0,0.3), 0 0 40px rgba(0, 150, 255, 0.3); }
-          50% { transform: scale(1.02); box-shadow: 0 12px 32px rgba(0,0,0,0.3), 0 0 50px rgba(0, 200, 255, 0.5); }
+          0%, 100% { 
+            transform: scale(1); 
+            box-shadow: 0 12px 32px rgba(0,0,0,0.3), 0 0 40px rgba(0, 150, 255, 0.3); 
+          }
+          50% { 
+            transform: scale(1.02); 
+            box-shadow: 0 12px 32px rgba(0,0,0,0.3), 0 0 50px rgba(0, 200, 255, 0.5); 
+          }
         }
         
-        @keyframes popupSlideIn {
-          0% { opacity: 0; transform: translateY(20px) scale(0.8); }
-          100% { opacity: 1; transform: translateY(0) scale(1); }
-        }
-        
-        @keyframes popupBounce {
-          0%, 100% { transform: translateY(0); }
-          50% { transform: translateY(-5px); }
-        }
-        
-        #leap-chat-cta {
+        #${ELEMENT_IDS.CHAT_BUTTON} {
           animation: energyFlow 3s ease infinite, electricPulse 2s ease-in-out infinite;
         }
         
-        #leap-chat-cta:hover {
+        #${ELEMENT_IDS.CHAT_BUTTON}:hover {
           transform: scale(1.08) !important;
           box-shadow: 0 12px 32px rgba(0,0,0,0.4), 0 0 60px rgba(0, 200, 255, 0.6) !important;
         }
         
-        .chat-popup-tooltip {
-          position: fixed;
-          right: 32px;
-          bottom: 140px;
-          background: linear-gradient(135deg, #ffffff 0%, #f0f0f0 100%);
-          color: #333;
-          padding: 16px 24px;
-          border-radius: 16px;
-          box-shadow: 0 8px 24px rgba(0,0,0,0.3), 0 0 40px rgba(196, 30, 58, 0.2);
-          z-index: 99998;
-          max-width: 280px;
-          font-family: 'Arial', sans-serif;
-          font-size: 15px;
-          font-weight: 600;
-          animation: popupSlideIn 0.5s ease, popupBounce 1.5s ease-in-out 0.5s infinite;
-          border: 3px solid #0066cc;
-          cursor: pointer;
-          transition: transform 0.2s ease, box-shadow 0.2s ease;
-        }
-        
-        .chat-popup-tooltip:hover {
-          transform: translateY(-2px);
-          box-shadow: 0 12px 32px rgba(0,0,0,0.4), 0 0 50px rgba(196, 30, 58, 0.3);
-        }
-        
-        .chat-popup-tooltip::after {
-          content: '';
-          position: absolute;
-          bottom: -12px;
-          right: 40px;
-          width: 0;
-          height: 0;
-          border-left: 12px solid transparent;
-          border-right: 12px solid transparent;
-          border-top: 12px solid #0066cc;
-        }
-        
-        .chat-popup-close {
-          position: absolute;
-          top: 8px;
-          right: 8px;
-          background: #0066cc;
-          color: white;
-          border: none;
-          border-radius: 50%;
-          width: 24px;
-          height: 24px;
-          font-size: 16px;
-          cursor: pointer;
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          font-weight: bold;
-          line-height: 1;
-        }
-        
-        .chat-popup-close:hover {
-          background: #0052a3;
+        #${ELEMENT_IDS.TOGGLE_BUTTON}:hover {
+          background-color: ${COLORS.PRIMARY} !important;
+          color: ${COLORS.WHITE} !important;
+          transform: scale(1.05) !important;
         }
       `;
       document.head.appendChild(style);
-      
-      // Car carousel rotation
-      setInterval(function () {
-        carImg.style.opacity = "0";
-        
-        setTimeout(function () {
-          currentCarIndex = (currentCarIndex + 1) % carImages.length;
-          carImg.src = carImages[currentCarIndex].url;
-          carImg.alt = carImages[currentCarIndex].name;
-          carImg.style.opacity = "1";
-          console.log('Showing car:', carImages[currentCarIndex].name);
-        }, 500);
-      }, 3000);
-      
-      // Energy particles effect (replacing snowflakes)
-      function createEnergyParticle() {
-        var particle = document.createElement("div");
-        particle.textContent = "⚡";  // Lightning bolt emoji
-        particle.style.position = "absolute";
-        particle.style.fontSize = "16px";
-        particle.style.color = "#00d4ff";
-        particle.style.pointerEvents = "none";
-        particle.style.animation = "energyParticle 2s linear";
-        particle.style.left = Math.random() * 100 + "%";
-        particle.style.top = "-10px";
-        particle.style.opacity = "0";
-        
-        btn.appendChild(particle);
-        
-        setTimeout(function () {
-          if (particle.parentNode) {
-            particle.parentNode.removeChild(particle);
-          }
-        }, 2000);
-      }
-      
-      // Removed energy particles animation for cleaner look
-      // setInterval(createEnergyParticle, 1000);
-      
-      btn.addEventListener("mouseenter", function () {
-        btn.style.transform = "scale(1.08)";
-      });
-      
-      btn.addEventListener("mouseleave", function () {
-        btn.style.transform = "scale(1)";
-      });
-      
-      btn.addEventListener("click", function () {
-        chatClicked = true;
-        hidePopupTooltip();
-        stopPopupInterval();
-        
-        if (typeof embeddedServiceInstance.utilAPI.launchChat === "function") {
-          console.log("launchChat() from CTA");
-          var r = embeddedServiceInstance.utilAPI.launchChat();
-          if (r && typeof r.then === "function") {
-            r.then(function () {
-              console.log("Chat launched (Promise resolved)");
-            }).catch(function (err) {
-              console.error("Error launching chat", err);
-            });
-          }
-        } else {
-          console.warn("launchChat() not available");
-        }
-      });
-      
-      document.body.appendChild(btn);
-      hideStandardButton(es);
-      embeddedServiceInstance = es;
-      console.log("Custom CTA created with Leapmotor electric car carousel");
-      
-      // Create toggle button
-      createToggleButton();
-      
-      startPopupInterval();
     }
     
-    // Create toggle button to show/hide main chat button
-    function createToggleButton() {
-      var toggleBtn = document.createElement("button");
-      toggleBtn.id = "chat-toggle-btn";
-      toggleBtn.textContent = toggleMessages.close;
-      
-      // Positioning
-      toggleBtn.style.position = "fixed";
-      if (window.innerWidth <= 480) {
-        toggleBtn.style.right = "6px";
-        toggleBtn.style.bottom = "95px";  // Moved up from 105px
-      } else if (window.innerWidth <= 768) {
-        toggleBtn.style.right = "8px";
-        toggleBtn.style.bottom = "100px";  // Moved up from 110px
-      } else {
-        toggleBtn.style.right = "10px";
-        toggleBtn.style.bottom = "105px";  // Moved up from 115px
+    /**
+     * Hide the standard Salesforce chat button
+     * @param {Object} es - Embedded service instance
+     */
+    function hideStandardButton(es) {
+      if (!es || !es.utilAPI || typeof es.utilAPI.hideChatButton !== 'function') {
+        return;
       }
       
-      // Styling
-      toggleBtn.style.zIndex = "99999";
-      toggleBtn.style.padding = "8px 16px";
-      toggleBtn.style.fontSize = "14px";
-      toggleBtn.style.fontWeight = "600";
-      toggleBtn.style.borderRadius = "20px";
-      toggleBtn.style.border = "2px solid #64a028";
-      toggleBtn.style.cursor = "pointer";
-      toggleBtn.style.backgroundColor = "#ffffff";
-      toggleBtn.style.color = "#64a028";
-      toggleBtn.style.boxShadow = "0 4px 12px rgba(0,0,0,0.2)";
-      toggleBtn.style.transition = "all 0.3s ease";
-      toggleBtn.style.fontFamily = "'Arial', sans-serif";
+      try {
+        es.utilAPI.hideChatButton();
+        console.log('Standard chat button hidden');
+      } catch (error) {
+        console.warn('Error hiding standard chat button:', error);
+      }
+    }
+    
+    /**
+     * Launch the chat window
+     */
+    function launchChat() {
+      if (!state.embeddedServiceInstance || 
+          !state.embeddedServiceInstance.utilAPI ||
+          typeof state.embeddedServiceInstance.utilAPI.launchChat !== 'function') {
+        console.warn('launchChat() not available');
+        return;
+      }
       
-      // Hover effect
-      toggleBtn.addEventListener("mouseenter", function() {
-        toggleBtn.style.backgroundColor = "#64a028";
-        toggleBtn.style.color = "#ffffff";
-        toggleBtn.style.transform = "scale(1.05)";
+      state.chatClicked = true;
+      console.log('Launching chat...');
+      
+      const result = state.embeddedServiceInstance.utilAPI.launchChat();
+      
+      if (result && typeof result.then === 'function') {
+        result
+          .then(function() {
+            console.log('Chat launched successfully');
+          })
+          .catch(function(error) {
+            console.error('Error launching chat:', error);
+          });
+      }
+    }
+    
+    // ============================================================================
+    // CAR CAROUSEL
+    // ============================================================================
+    
+    /**
+     * Create car image element with styling
+     * @returns {HTMLImageElement} Configured car image element
+     */
+    function createCarImage() {
+      const img = document.createElement('img');
+      img.src = CAR_MODELS[0].url;
+      img.alt = CAR_MODELS[0].name;
+      
+      applyStyles(img, {
+        width: '100%',
+        height: '100%',
+        objectFit: 'contain',
+        display: 'block',
+        transition: 'opacity 0.5s ease, transform 0.3s ease',
+        filter: 'drop-shadow(0 3px 8px rgba(0,0,0,0.2)) brightness(1.15) contrast(1.08) saturate(1.1)',
+        background: 'rgba(255, 255, 255, 0.15)',
+        borderRadius: '16px',
+        padding: '8px',
+        border: '1px solid rgba(255, 255, 255, 0.2)',
+        boxShadow: 'inset 0 1px 2px rgba(255,255,255,0.3)',
+        backdropFilter: 'blur(10px)'
       });
       
-      toggleBtn.addEventListener("mouseleave", function() {
-        toggleBtn.style.backgroundColor = "#ffffff";
-        toggleBtn.style.color = "#64a028";
-        toggleBtn.style.transform = "scale(1)";
+      return img;
+    }
+    
+    /**
+     * Start the car carousel animation
+     * @param {HTMLImageElement} carImg - Car image element
+     */
+    function startCarousel(carImg) {
+      // Clear any existing interval
+      if (state.carouselInterval) {
+        clearInterval(state.carouselInterval);
+      }
+      
+      state.carouselInterval = setInterval(function() {
+        carImg.style.opacity = '0';
+        
+        setTimeout(function() {
+          state.currentCarIndex = (state.currentCarIndex + 1) % CAR_MODELS.length;
+          const nextCar = CAR_MODELS[state.currentCarIndex];
+          carImg.src = nextCar.url;
+          carImg.alt = nextCar.name;
+          carImg.style.opacity = '1';
+          console.log('Showing car:', nextCar.name);
+        }, TIMING.FADE_DURATION);
+      }, TIMING.CAROUSEL_INTERVAL);
+    }
+    
+    // ============================================================================
+    // BUTTON CREATION
+    // ============================================================================
+    
+    /**
+     * Create the main chat button
+     * @returns {HTMLButtonElement} Configured chat button
+     */
+    function createChatButton() {
+      const btn = document.createElement('button');
+      btn.id = ELEMENT_IDS.CHAT_BUTTON;
+      btn.setAttribute('aria-label', state.localization.message);
+      
+      const position = getResponsivePosition(false);
+      
+      applyStyles(btn, {
+        position: 'fixed',
+        right: position.right,
+        bottom: position.bottom,
+        zIndex: '99999',
+        padding: '11px 39px',
+        fontSize: '22px',
+        fontWeight: '700',
+        borderRadius: '999px',
+        border: 'none',
+        cursor: 'pointer',
+        boxShadow: '0 12px 32px rgba(0,0,0,0.3), 0 0 40px rgba(100, 160, 40, 0.4)',
+        background: COLORS.PRIMARY,
+        backgroundSize: '200% 200%',
+        color: COLORS.WHITE,
+        display: 'inline-flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        gap: '18px',
+        transition: 'all 0.3s ease',
+        overflow: 'visible',
+        fontFamily: "'Arial', sans-serif",
+        textShadow: '3px 3px 6px rgba(0,0,0,0.4)',
+        minWidth: '284px',
+        minHeight: '77px'
+      });
+      
+      // Create icon container with car carousel
+      const iconContainer = document.createElement('div');
+      applyStyles(iconContainer, {
+        position: 'relative',
+        width: '85px',
+        height: '60px',
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        overflow: 'hidden'
+      });
+      
+      const carImg = createCarImage();
+      iconContainer.appendChild(carImg);
+      
+      // Create text span
+      const textSpan = document.createElement('span');
+      textSpan.textContent = state.localization.message;
+      textSpan.style.letterSpacing = '0.5px';
+      
+      // Create logo
+      const logoImg = document.createElement('img');
+      logoImg.src = 'assets/Leapmotor.png';
+      logoImg.alt = 'Leapmotor';
+      
+      applyStyles(logoImg, {
+        height: '42px',
+        width: 'auto',
+        objectFit: 'contain',
+        marginLeft: '16px',
+        opacity: '1',
+        filter: 'drop-shadow(0 3px 10px rgba(0,0,0,0.2)) brightness(1.25) contrast(1.08)',
+        background: 'transparent',
+        padding: '0',
+        borderRadius: '0',
+        border: 'none',
+        boxShadow: 'none'
+      });
+      
+      // Assemble button
+      btn.appendChild(iconContainer);
+      btn.appendChild(textSpan);
+      btn.appendChild(logoImg);
+      
+      // Add event listeners
+      btn.addEventListener('click', launchChat);
+      btn.addEventListener('mouseenter', function() {
+        btn.style.transform = 'scale(1.08)';
+      });
+      btn.addEventListener('mouseleave', function() {
+        btn.style.transform = 'scale(1)';
+      });
+      
+      // Start carousel
+      startCarousel(carImg);
+      
+      return btn;
+    }
+    
+    /**
+     * Create the toggle button
+     * @returns {HTMLButtonElement} Configured toggle button
+     */
+    function createToggleButton() {
+      const toggleBtn = document.createElement('button');
+      toggleBtn.id = ELEMENT_IDS.TOGGLE_BUTTON;
+      toggleBtn.textContent = state.localization.toggle.close;
+      toggleBtn.setAttribute('aria-label', state.localization.toggle.close);
+      
+      const position = getResponsivePosition(true);
+      
+      applyStyles(toggleBtn, {
+        position: 'fixed',
+        right: position.right,
+        bottom: position.bottom,
+        zIndex: '99999',
+        padding: '8px 16px',
+        fontSize: '14px',
+        fontWeight: '600',
+        borderRadius: '20px',
+        border: '2px solid ' + COLORS.PRIMARY,
+        cursor: 'pointer',
+        backgroundColor: COLORS.WHITE,
+        color: COLORS.PRIMARY,
+        boxShadow: '0 4px 12px rgba(0,0,0,0.2)',
+        transition: 'all 0.3s ease',
+        fontFamily: "'Arial', sans-serif"
       });
       
       // Toggle functionality
-      toggleBtn.addEventListener("click", function() {
-        // Hide popup when toggle button is clicked
-        hidePopupTooltip();
+      toggleBtn.addEventListener('click', function() {
+        const mainBtn = document.getElementById(ELEMENT_IDS.CHAT_BUTTON);
+        if (!mainBtn) return;
         
-        var mainBtn = document.getElementById("leap-chat-cta");
-        if (mainBtn) {
-          if (isChatButtonVisible) {
-            // Hide main button
-            mainBtn.style.display = "none";
-            toggleBtn.textContent = toggleMessages.open;
-            isChatButtonVisible = false;
-            stopPopupInterval();  // Stop popup when button is hidden
-          } else {
-            // Show main button
-            mainBtn.style.display = "inline-flex";
-            toggleBtn.textContent = toggleMessages.close;
-            isChatButtonVisible = true;
-            startPopupInterval();  // Restart popup when button is shown
-          }
+        state.isChatButtonVisible = !state.isChatButtonVisible;
+        
+        if (state.isChatButtonVisible) {
+          mainBtn.style.display = 'inline-flex';
+          toggleBtn.textContent = state.localization.toggle.close;
+          toggleBtn.setAttribute('aria-label', state.localization.toggle.close);
+        } else {
+          mainBtn.style.display = 'none';
+          toggleBtn.textContent = state.localization.toggle.open;
+          toggleBtn.setAttribute('aria-label', state.localization.toggle.open);
         }
       });
       
-      document.body.appendChild(toggleBtn);
-      console.log("Toggle button created");
+      return toggleBtn;
     }
     
-    function startPopupInterval() {
-      setTimeout(function() {
-        if (!chatClicked) {
-          showPopupTooltip();
-        }
-      }, 5000);
-      
-      popupInterval = setInterval(function() {
-        if (!chatClicked) {
-          showPopupTooltip();
-        }
-      }, 60000);
-    }
+    // ============================================================================
+    // BUTTON VISIBILITY MANAGEMENT
+    // ============================================================================
     
-    function stopPopupInterval() {
-      if (popupInterval) {
-        clearInterval(popupInterval);
-        popupInterval = null;
-        console.log('Popup interval stopped');
+    /**
+     * Show the custom chat button
+     * @param {Object} es - Embedded service instance
+     */
+    function showCustomCTA(es) {
+      if (!es || !es.utilAPI) {
+        console.warn('utilAPI not available');
+        return;
       }
-    }
-    
-    function showPopupTooltip() {
-      var existingPopup = document.getElementById("chat-popup-tooltip");
-      if (existingPopup || chatClicked) return;
       
-      var popup = document.createElement("div");
-      popup.id = "chat-popup-tooltip";
-      popup.className = "chat-popup-tooltip";
-      popup.textContent = popupMessage;
-      
-      popup.addEventListener("click", function(e) {
-        if (e.target.className === 'chat-popup-close') return;
-        
-        chatClicked = true;
-        hidePopupTooltip();
-        stopPopupInterval();
-        
-        if (embeddedServiceInstance && typeof embeddedServiceInstance.utilAPI.launchChat === "function") {
-          console.log("launchChat() from popup");
-          var r = embeddedServiceInstance.utilAPI.launchChat();
-          if (r && typeof r.then === "function") {
-            r.then(function () {
-              console.log("Chat launched from popup (Promise resolved)");
-            }).catch(function (err) {
-              console.error("Error launching chat from popup", err);
-            });
-          }
-        }
-      });
-      
-      var closeBtn = document.createElement("button");
-      closeBtn.className = "chat-popup-close";
-      closeBtn.textContent = "×";
-      closeBtn.addEventListener("click", function(e) {
-        e.stopPropagation();
-        hidePopupTooltip();
-      });
-      
-      popup.appendChild(closeBtn);
-      document.body.appendChild(popup);
-      
-      playNotificationSound();
-      
-      setTimeout(function() {
-        hidePopupTooltip();
-      }, 10000);
-      
-      console.log("Popup tooltip shown");
-    }
-    
-    function hidePopupTooltip() {
-      var popup = document.getElementById("chat-popup-tooltip");
-      if (popup) {
-        popup.style.animation = "none";
-        popup.style.opacity = "0";
-        popup.style.transform = "translateY(20px) scale(0.8)";
-        setTimeout(function() {
-          if (popup.parentNode) {
-            popup.parentNode.removeChild(popup);
-          }
-        }, 300);
-        console.log("Popup tooltip hidden");
+      // Check if button already exists
+      const existing = document.getElementById(ELEMENT_IDS.CHAT_BUTTON);
+      if (existing) {
+        existing.style.display = 'inline-flex';
+        hideStandardButton(es);
+        console.log('Custom CTA shown again');
+        return;
       }
+      
+      // Inject styles
+      injectStyles();
+      
+      // Create and append buttons
+      const chatButton = createChatButton();
+      const toggleButton = createToggleButton();
+      
+      document.body.appendChild(chatButton);
+      document.body.appendChild(toggleButton);
+      
+      // Store instance and hide standard button
+      state.embeddedServiceInstance = es;
+      hideStandardButton(es);
+      
+      console.log('Custom CTA created with Leapmotor electric car carousel');
     }
     
+    /**
+     * Hide the custom chat button
+     */
     function hideCustomCTA() {
-      var btn = document.getElementById("leap-chat-cta");
+      const btn = document.getElementById(ELEMENT_IDS.CHAT_BUTTON);
       if (btn) {
-        btn.style.display = "none";
-        console.log("Custom CTA hidden");
+        btn.style.display = 'none';
+        console.log('Custom CTA hidden');
       }
     }
     
-    function hideToggleButton() {
-      var toggleBtn = document.getElementById("chat-toggle-btn");
+    /**
+     * Toggle visibility of toggle button
+     * @param {boolean} show - Whether to show or hide
+     */
+    function toggleButtonVisibility(show) {
+      const toggleBtn = document.getElementById(ELEMENT_IDS.TOGGLE_BUTTON);
       if (toggleBtn) {
-        toggleBtn.style.display = "none";
-        console.log("Toggle button hidden");
+        toggleBtn.style.display = show ? 'block' : 'none';
+        console.log('Toggle button ' + (show ? 'shown' : 'hidden'));
       }
     }
     
-    function showToggleButton() {
-      var toggleBtn = document.getElementById("chat-toggle-btn");
-      if (toggleBtn) {
-        toggleBtn.style.display = "block";
-        console.log("Toggle button shown");
-      }
-    }
+    // ============================================================================
+    // EVENT HANDLERS
+    // ============================================================================
     
-    window.addEventListener("onEmbeddedMessagingButtonCreated", function () {
-      console.log("onEmbeddedMessagingButtonCreated fired");
-      var es = window.embeddedservice_bootstrap;
+    /**
+     * Handle button created event
+     */
+    function handleButtonCreated() {
+      console.log('onEmbeddedMessagingButtonCreated fired');
+      const es = window.embeddedservice_bootstrap;
       if (es) {
         showCustomCTA(es);
       }
-    });
+    }
     
-    window.addEventListener("onEmbeddedMessagingWindowMaximized", function () {
-      console.log("onEmbeddedMessagingWindowMaximized fired");
+    /**
+     * Handle window maximized event
+     */
+    function handleWindowMaximized() {
+      console.log('onEmbeddedMessagingWindowMaximized fired');
       hideCustomCTA();
-      hideToggleButton();  // Hide toggle button when chat opens
-    });
+      toggleButtonVisibility(false);
+    }
     
-    window.addEventListener("onEmbeddedMessagingWindowMinimized", function () {
-      console.log("onEmbeddedMessagingWindowMinimized fired");
-      var es = window.embeddedservice_bootstrap;
+    /**
+     * Handle window minimized event
+     */
+    function handleWindowMinimized() {
+      console.log('onEmbeddedMessagingWindowMinimized fired');
+      const es = window.embeddedservice_bootstrap;
       if (es) {
         hideStandardButton(es);
         showCustomCTA(es);
-        showToggleButton();  // Show toggle button when chat minimizes
+        toggleButtonVisibility(true);
       }
-    });
+    }
     
-    function waitForES(maxAttempts, intervalMs) {
-      var attempts = 0;
+    // ============================================================================
+    // INITIALIZATION
+    // ============================================================================
+    
+    /**
+     * Poll for embedded service availability
+     */
+    function waitForEmbeddedService() {
+      let attempts = 0;
+      
       (function check() {
         attempts++;
-        var es = window.embeddedservice_bootstrap;
+        const es = window.embeddedservice_bootstrap;
+        
         if (es && es.utilAPI) {
-          console.log("utilAPI ready (initial)");
+          console.log('utilAPI ready');
           showCustomCTA(es);
           return;
         }
-        if (attempts >= maxAttempts) {
-          console.warn("utilAPI not found after", attempts, "attempts");
+        
+        if (attempts >= TIMING.MAX_POLLING_ATTEMPTS) {
+          console.warn('utilAPI not found after ' + attempts + ' attempts');
           return;
         }
-        setTimeout(check, intervalMs);
+        
+        setTimeout(check, TIMING.POLLING_INTERVAL);
       })();
     }
     
-    if (document.readyState === "complete" || document.readyState === "interactive") {
-      waitForES(50, 200);
-    } else {
-      window.addEventListener("DOMContentLoaded", function () {
-        waitForES(50, 200);
-      });
+    /**
+     * Initialize the custom chat button
+     */
+    function init() {
+      // Register event listeners
+      window.addEventListener('onEmbeddedMessagingButtonCreated', handleButtonCreated);
+      window.addEventListener('onEmbeddedMessagingWindowMaximized', handleWindowMaximized);
+      window.addEventListener('onEmbeddedMessagingWindowMinimized', handleWindowMinimized);
+      
+      // Start polling for embedded service
+      if (document.readyState === 'complete' || document.readyState === 'interactive') {
+        waitForEmbeddedService();
+      } else {
+        window.addEventListener('DOMContentLoaded', waitForEmbeddedService);
+      }
     }
+    
+    // Start initialization
+    init();
   })();
 </script>
-<script type="text/javascript" src="https://leapmotor--dev01.sandbox.my.site.com/ESWLPMLeapmotor1760706603231/assets/js/bootstrap.min.js" onload="initEmbeddedMessaging()"></script>
+<script
+  type="text/javascript"
+  src="https://leapmotor--dev01.sandbox.my.site.com/ESWLPMLeapmotor1760706603231/assets/js/bootstrap.min.js"
+  onload="initEmbeddedMessaging()"
+></script>
+
 </body>
 </html>
