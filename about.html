@@ -174,9 +174,7 @@
       isChatButtonVisible: true,
       embeddedServiceInstance: null,
       currentCarIndex: 0,
-      currentCircleCarIndex: 0,
       carouselInterval: null,
-      circleCarouselInterval: null,
       countryCode: getCountryCodeFromPath(),
       localization: null
     };
@@ -217,9 +215,9 @@
     function getCircleButtonPosition() {
       const width = window.innerWidth;
       const positions = {
-        mobile: { right: '6px', bottom: '12px' },
-        tablet: { right: '8px', bottom: '16px' },
-        desktop: { right: '10px', bottom: '24px' }
+        mobile: { right: '20px', bottom: '12px' },
+        tablet: { right: '25px', bottom: '16px' },
+        desktop: { right: '30px', bottom: '24px' }
       };
       
       if (width <= BREAKPOINTS.MOBILE) return positions.mobile;
@@ -378,24 +376,35 @@
     }
     
     /**
-     * Create car image for circle button
-     * @returns {HTMLImageElement} Configured car image element
+     * Create modern chat icon for circle button
+     * @returns {HTMLElement} Configured chat icon element
      */
-    function createCircleCarImage() {
-      const img = document.createElement('img');
-      img.src = CAR_MODELS[0].url;
-      img.alt = CAR_MODELS[0].name;
+    function createChatIcon() {
+      const iconContainer = document.createElement('div');
+      iconContainer.innerHTML = `
+        <svg width="36" height="36" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <path d="M20 2H4C2.9 2 2.01 2.9 2.01 4L2 22L6 18H20C21.1 18 22 17.1 22 16V4C22 2.9 21.1 2 20 2Z" fill="white" opacity="0.95"/>
+          <circle cx="7" cy="10" r="1.5" fill="${COLORS.PRIMARY}">
+            <animate attributeName="opacity" values="0.3;1;0.3" dur="1.4s" repeatCount="indefinite" begin="0s"/>
+          </circle>
+          <circle cx="12" cy="10" r="1.5" fill="${COLORS.PRIMARY}">
+            <animate attributeName="opacity" values="0.3;1;0.3" dur="1.4s" repeatCount="indefinite" begin="0.2s"/>
+          </circle>
+          <circle cx="17" cy="10" r="1.5" fill="${COLORS.PRIMARY}">
+            <animate attributeName="opacity" values="0.3;1;0.3" dur="1.4s" repeatCount="indefinite" begin="0.4s"/>
+          </circle>
+        </svg>
+      `;
       
-      applyStyles(img, {
+      applyStyles(iconContainer, {
         width: '100%',
         height: '100%',
-        objectFit: 'contain',
-        display: 'block',
-        transition: 'opacity 0.5s ease',
-        filter: 'drop-shadow(0 2px 4px rgba(0,0,0,0.2)) brightness(1.15) contrast(1.08) saturate(1.1)'
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center'
       });
       
-      return img;
+      return iconContainer;
     }
     
     /**
@@ -423,26 +432,12 @@
     }
     
     /**
-     * Start the circle button car carousel animation
-     * @param {HTMLImageElement} carImg - Car image element
+     * No carousel needed for circle button - using static icon with CSS animations
      */
-    function startCircleCarousel(carImg) {
-      // Clear any existing interval
-      if (state.circleCarouselInterval) {
-        clearInterval(state.circleCarouselInterval);
-      }
-      
-      state.circleCarouselInterval = setInterval(function() {
-        carImg.style.opacity = '0';
-        
-        setTimeout(function() {
-          state.currentCircleCarIndex = (state.currentCircleCarIndex + 1) % CAR_MODELS.length;
-          const nextCar = CAR_MODELS[state.currentCircleCarIndex];
-          carImg.src = nextCar.url;
-          carImg.alt = nextCar.name;
-          carImg.style.opacity = '1';
-        }, TIMING.FADE_DURATION);
-      }, TIMING.CAROUSEL_INTERVAL);
+    function startCircleCarousel() {
+      // Circle button now uses SVG with built-in CSS animations
+      // No JavaScript carousel needed
+      return;
     }
     
     // ============================================================================
@@ -567,44 +562,32 @@
         borderRadius: '50%',
         border: 'none',
         cursor: 'pointer',
-        boxShadow: '0 8px 24px rgba(0,0,0,0.3), 0 0 30px rgba(100, 160, 40, 0.4)',
-        background: COLORS.PRIMARY,
+        boxShadow: '0 8px 24px rgba(0,0,0,0.25), 0 4px 12px rgba(100, 160, 40, 0.3)',
+        background: 'linear-gradient(135deg, ' + COLORS.PRIMARY + ' 0%, #7bc043 100%)',
         color: COLORS.WHITE,
         display: 'none',
         alignItems: 'center',
         justifyContent: 'center',
-        padding: '12px',
-        transition: 'all 0.3s ease',
-        overflow: 'hidden',
+        padding: '0',
+        transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+        overflow: 'visible',
         fontFamily: "'Arial', sans-serif"
       });
       
-      // Create car image container
-      const carContainer = document.createElement('div');
-      applyStyles(carContainer, {
-        width: '100%',
-        height: '100%',
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'center',
-        overflow: 'hidden'
-      });
-      
-      const carImg = createCircleCarImage();
-      carContainer.appendChild(carImg);
-      btn.appendChild(carContainer);
+      // Create chat icon
+      const chatIcon = createChatIcon();
+      btn.appendChild(chatIcon);
       
       // Add event listeners
       btn.addEventListener('click', launchChat);
       btn.addEventListener('mouseenter', function() {
         btn.style.transform = 'scale(1.1)';
+        btn.style.boxShadow = '0 12px 32px rgba(0,0,0,0.3), 0 6px 16px rgba(100, 160, 40, 0.5)';
       });
       btn.addEventListener('mouseleave', function() {
         btn.style.transform = 'scale(1)';
+        btn.style.boxShadow = '0 8px 24px rgba(0,0,0,0.25), 0 4px 12px rgba(100, 160, 40, 0.3)';
       });
-      
-      // Start carousel
-      startCircleCarousel(carImg);
       
       return btn;
     }
