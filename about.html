@@ -176,7 +176,8 @@
       currentCarIndex: 0,
       carouselInterval: null,
       countryCode: getCountryCodeFromPath(),
-      localization: null
+      localization: null,
+      lastUsedButton: 'main' // Track which button was used: 'main' or 'circle'
     };
     
     // Initialize localization
@@ -319,8 +320,9 @@
     
     /**
      * Launch the chat window
+     * @param {string} buttonType - Type of button used: 'main' or 'circle'
      */
-    function launchChat() {
+    function launchChat(buttonType) {
       if (!state.embeddedServiceInstance || 
           !state.embeddedServiceInstance.utilAPI ||
           typeof state.embeddedServiceInstance.utilAPI.launchChat !== 'function') {
@@ -329,7 +331,8 @@
       }
       
       state.chatClicked = true;
-      console.log('Launching chat...');
+      state.lastUsedButton = buttonType || 'main';
+      console.log('Launching chat from ' + state.lastUsedButton + ' button...');
       
       const result = state.embeddedServiceInstance.utilAPI.launchChat();
       
@@ -527,7 +530,9 @@
       btn.appendChild(logoImg);
       
       // Add event listeners
-      btn.addEventListener('click', launchChat);
+      btn.addEventListener('click', function() {
+        launchChat('main');
+      });
       btn.addEventListener('mouseenter', function() {
         btn.style.transform = 'scale(1.08)';
       });
@@ -579,7 +584,9 @@
       btn.appendChild(chatIcon);
       
       // Add event listeners
-      btn.addEventListener('click', launchChat);
+      btn.addEventListener('click', function() {
+        launchChat('circle');
+      });
       btn.addEventListener('mouseenter', function() {
         btn.style.transform = 'scale(1.1)';
         btn.style.boxShadow = '0 12px 32px rgba(0,0,0,0.3), 0 6px 16px rgba(100, 160, 40, 0.5)';
@@ -751,7 +758,23 @@
       const es = window.embeddedservice_bootstrap;
       if (es) {
         hideStandardButton(es);
-        showCustomCTA(es);
+        
+        // Show the button that was last used
+        const mainBtn = document.getElementById(ELEMENT_IDS.CHAT_BUTTON);
+        const circleBtn = document.getElementById(ELEMENT_IDS.CIRCLE_BUTTON);
+        
+        if (state.lastUsedButton === 'circle') {
+          // Show circle button
+          if (mainBtn) mainBtn.style.display = 'none';
+          if (circleBtn) circleBtn.style.display = 'flex';
+          state.isChatButtonVisible = false;
+        } else {
+          // Show main button
+          if (mainBtn) mainBtn.style.display = 'inline-flex';
+          if (circleBtn) circleBtn.style.display = 'none';
+          state.isChatButtonVisible = true;
+        }
+        
         toggleButtonVisibility(true);
       }
     }
@@ -811,6 +834,5 @@
   src="https://leapmotor--dev01.sandbox.my.site.com/ESWLPMLeapmotor1760706603231/assets/js/bootstrap.min.js"
   onload="initEmbeddedMessaging()"
 ></script>
-
 </body>
 </html>
