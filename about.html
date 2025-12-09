@@ -34,7 +34,7 @@
   </footer>
 
   <script src="js/main.js"></script>
-  <script type='text/javascript'>
+  <script type="text/javascript">
   /**
    * Initialize Salesforce Embedded Messaging with country-specific settings
    */
@@ -42,24 +42,29 @@
     try {
       const countryCode = getCountryCodeFromPath();
       const countryInfo = getCountryInfo(countryCode);
-      
+
       // Configure embedded service settings
       embeddedservice_bootstrap.settings.language = countryInfo.language;
       embeddedservice_bootstrap.settings.shouldOpenLinksInSameTab = true;
       embeddedservice_bootstrap.settings.hideChatButtonOnLoad = true;
-      embeddedservice_bootstrap.settings.chatButtonPosition = '200px, 30px';
-      
-      console.log('Detected country code:', countryCode, '| Setting language to:', countryInfo.language);
-      
+      embeddedservice_bootstrap.settings.chatButtonPosition = "200px, 30px";
+
+      console.log(
+        "Detected country code:",
+        countryCode,
+        "| Setting language to:",
+        countryInfo.language
+      );
+
       // Set prechat fields when ready
-      window.addEventListener("onEmbeddedMessagingReady", function() {
+      window.addEventListener("onEmbeddedMessagingReady", function () {
         embeddedservice_bootstrap.prechatAPI.setHiddenPrechatFields({
           Country: countryInfo.name,
           Language: countryInfo.language,
           CountryCode: countryInfo.code,
         });
       });
-      
+
       // Initialize embedded service
       embeddedservice_bootstrap.init(
         "00DMA000003XnGM",
@@ -79,10 +84,12 @@
    */
   function getCountryCodeFromPath() {
     const pathParts = window.location.pathname
-      .split('/')
-      .filter(function(part) { return part.length > 0; });
-    
-    return pathParts.length > 0 ? pathParts[0].toLowerCase() : 'en';
+      .split("/")
+      .filter(function (part) {
+        return part.length > 0;
+      });
+
+    return pathParts.length > 0 ? pathParts[0].toLowerCase() : "en";
   }
   /**
    * Get country information based on country code
@@ -91,85 +98,85 @@
    */
   function getCountryInfo(countryCode) {
     const COUNTRY_MAPPING = {
-      'it': { name: 'Italy', language: 'it', code: 'it' },
-      'es': { name: 'Spain', language: 'es', code: 'es' },
-      'fr': { name: 'France', language: 'fr', code: 'fr' },
-      'de': { name: 'Germany', language: 'de', code: 'de' },
-      'uk': { name: 'United Kingdom', language: 'en_US', code: 'uk' },
-      'us': { name: 'United States', language: 'en_US', code: 'us' },
-      'en': { name: 'United States', language: 'en_US', code: 'en' }
+      it: { name: "Italy", language: "it", code: "it" },
+      es: { name: "Spain", language: "es", code: "es" },
+      fr: { name: "France", language: "fr", code: "fr" },
+      de: { name: "Germany", language: "de", code: "de" },
+      uk: { name: "United Kingdom", language: "en_US", code: "uk" },
+      us: { name: "United States", language: "en_US", code: "us" },
+      en: { name: "United States", language: "en_US", code: "en" },
     };
-    
-    return COUNTRY_MAPPING[countryCode] || COUNTRY_MAPPING['en'];
+
+    return COUNTRY_MAPPING[countryCode] || COUNTRY_MAPPING["en"];
   }
   /**
    * Custom Chat Button Module
    * Handles creation and management of custom Leapmotor chat button
    */
-  (function() {
-    'use strict';
-    
+  (function () {
+    "use strict";
+
     // ============================================================================
     // CONSTANTS
     // ============================================================================
-    
+
     const ELEMENT_IDS = {
-      CHAT_BUTTON: 'leap-chat-cta',
-      TOGGLE_BUTTON: 'chat-toggle-btn',
-      CIRCLE_BUTTON: 'chat-circle-btn',
-      STYLES: 'leap-chat-styles'
+      CHAT_BUTTON: "leap-chat-cta",
+      TOGGLE_BUTTON: "chat-toggle-btn",
+      CIRCLE_BUTTON: "chat-circle-btn",
+      STYLES: "leap-chat-styles",
     };
-    
+
     const BREAKPOINTS = {
       MOBILE: 480,
-      TABLET: 768
+      TABLET: 768,
     };
-    
+
     const TIMING = {
       CAROUSEL_INTERVAL: 3000,
       FADE_DURATION: 500,
       POLLING_INTERVAL: 200,
-      MAX_POLLING_ATTEMPTS: 50
+      MAX_POLLING_ATTEMPTS: 50,
     };
-    
+
     const COLORS = {
-      PRIMARY: '#64a028',
-      WHITE: '#ffffff'
+      PRIMARY: "#64a028",
+      WHITE: "#ffffff",
     };
-    
+
     const CAR_MODELS = [
-      { name: 'model1', url: 'assets/model1.png' },
-      { name: 'model2', url: 'assets/model2.png' },
-      { name: 'model3', url: 'assets/model3.png' },
-      { name: 'model4', url: 'assets/model4.png' },
-      { name: 'model5', url: 'assets/model5.png' }
+      { name: "model1", url: "assets/model1.png" },
+      { name: "model2", url: "assets/model2.png" },
+      { name: "model3", url: "assets/model3.png" },
+      { name: "model4", url: "assets/model4.png" },
+      { name: "model5", url: "assets/model5.png" },
     ];
-    
+
     const LOCALIZATION = {
       MESSAGES: {
-        'it': 'Chatta con me!',
-        'es': '¡Chatea conmigo!',
-        'fr': 'Discutez avec moi!',
-        'de': 'Chatte mit mir!',
-        'uk': 'Chat with me!',
-        'us': 'Chat with me!',
-        'en': 'Chat with me!'
+        it: "Chatta con me!",
+        es: "¡Chatea conmigo!",
+        fr: "Discutez avec moi!",
+        de: "Chatte mit mir!",
+        uk: "Chat with me!",
+        us: "Chat with me!",
+        en: "Chat with me!",
       },
       TOGGLE: {
-        'it': { open: 'Massimizza', close: 'Minimizza' },
-        'es': { open: 'Maximizar', close: 'Minimizar' },
-        'fr': { open: 'Maximiser', close: 'Minimiser' },
-        'de': { open: 'Maximieren', close: 'Minimieren' },
-        'uk': { open: 'Maximize', close: 'Minimize' },
-        'us': { open: 'Maximize', close: 'Minimize' },
-        'en': { open: 'Maximize', close: 'Minimize' }
-      }
+        it: { open: "Massimizza", close: "Minimizza" },
+        es: { open: "Maximizar", close: "Minimizar" },
+        fr: { open: "Maximiser", close: "Minimiser" },
+        de: { open: "Maximieren", close: "Minimieren" },
+        uk: { open: "Maximize", close: "Minimize" },
+        us: { open: "Maximize", close: "Minimize" },
+        en: { open: "Maximize", close: "Minimize" },
+      },
     };
-    
+
     // ============================================================================
     // STATE
     // ============================================================================
-    
+
     const state = {
       chatClicked: false,
       isChatButtonVisible: true,
@@ -178,73 +185,105 @@
       carouselInterval: null,
       countryCode: getCountryCodeFromPath(),
       localization: null,
-      lastUsedButton: 'main' // Track which button was used: 'main' or 'circle'
+      lastUsedButton: "main", // Track which button was used: 'main' or 'circle'
     };
-    
+
     // Initialize localization
     state.localization = {
-      message: LOCALIZATION.MESSAGES[state.countryCode] || LOCALIZATION.MESSAGES['en'],
-      toggle: LOCALIZATION.TOGGLE[state.countryCode] || LOCALIZATION.TOGGLE['en']
+      message:
+        LOCALIZATION.MESSAGES[state.countryCode] || LOCALIZATION.MESSAGES["en"],
+      toggle:
+        LOCALIZATION.TOGGLE[state.countryCode] || LOCALIZATION.TOGGLE["en"],
     };
-    
-    console.log('Detected country:', state.countryCode, '| Message:', state.localization.message);
-    
+
+    console.log(
+      "Detected country:",
+      state.countryCode,
+      "| Message:",
+      state.localization.message
+    );
+
     // ============================================================================
     // UTILITY FUNCTIONS
     // ============================================================================
-    
+
     /**
-     * Get responsive positioning based on screen width
+     * Calculate 15% upward adjustment for bottom position
+     * @param {string} bottomValue - Original bottom value (e.g., '12px')
+     * @returns {string} Adjusted bottom value
+     */
+    function adjustBottomPosition(bottomValue) {
+      const numericValue = parseFloat(bottomValue);
+      const viewportHeight = window.innerHeight;
+      const adjustment = viewportHeight * 0.15; // 15% of viewport height
+      const newValue = numericValue + adjustment;
+      return newValue + "px";
+    }
+
+    /**
+     * Get responsive positioning based on screen width (moved 15% up)
      * @returns {Object} Position object with right and bottom values
      */
     function getResponsivePosition(isToggle) {
       const width = window.innerWidth;
       const positions = {
-        mobile: { right: '6px', bottom: isToggle ? '95px' : '12px' },
-        tablet: { right: '8px', bottom: isToggle ? '100px' : '16px' },
-        desktop: { right: '10px', bottom: isToggle ? '105px' : '24px' }
+        mobile: { right: "6px", bottom: isToggle ? "95px" : "12px" },
+        tablet: { right: "8px", bottom: isToggle ? "100px" : "16px" },
+        desktop: { right: "10px", bottom: isToggle ? "105px" : "24px" },
       };
-      
-      if (width <= BREAKPOINTS.MOBILE) return positions.mobile;
-      if (width <= BREAKPOINTS.TABLET) return positions.tablet;
-      return positions.desktop;
+
+      let position;
+      if (width <= BREAKPOINTS.MOBILE) position = positions.mobile;
+      else if (width <= BREAKPOINTS.TABLET) position = positions.tablet;
+      else position = positions.desktop;
+
+      // Adjust bottom position by 15%
+      position.bottom = adjustBottomPosition(position.bottom);
+
+      return position;
     }
-    
+
     /**
-     * Get circle button position (below toggle button)
+     * Get circle button position (matches standard Salesforce button position)
+     * Standard button is typically at bottom: 20px, right: 20px
      * @returns {Object} Position object with right and bottom values
      */
     function getCircleButtonPosition() {
       const width = window.innerWidth;
+
+      // Match standard Salesforce button position with 15% upward adjustment
+      const standardBottom = "20px";
+      const adjustedBottom = adjustBottomPosition(standardBottom);
+
       const positions = {
-        mobile: { right: '17px', bottom: '12px' },
-        tablet: { right: '21px', bottom: '16px' },
-        desktop: { right: '25px', bottom: '24px' }
+        mobile: { right: "20px", bottom: adjustedBottom },
+        tablet: { right: "20px", bottom: adjustedBottom },
+        desktop: { right: "20px", bottom: adjustedBottom },
       };
-      
+
       if (width <= BREAKPOINTS.MOBILE) return positions.mobile;
       if (width <= BREAKPOINTS.TABLET) return positions.tablet;
       return positions.desktop;
     }
-    
+
     /**
      * Apply multiple styles to an element
      * @param {HTMLElement} element - Target element
      * @param {Object} styles - Styles object
      */
     function applyStyles(element, styles) {
-      Object.keys(styles).forEach(function(key) {
+      Object.keys(styles).forEach(function (key) {
         element.style[key] = styles[key];
       });
     }
-    
+
     /**
      * Create and append stylesheet to document head
      */
     function injectStyles() {
       if (document.getElementById(ELEMENT_IDS.STYLES)) return;
-      
-      const style = document.createElement('style');
+
+      const style = document.createElement("style");
       style.id = ELEMENT_IDS.STYLES;
       style.textContent = `
         @keyframes energyFlow {
@@ -301,90 +340,97 @@
       `;
       document.head.appendChild(style);
     }
-    
+
     /**
      * Hide the standard Salesforce chat button
      * @param {Object} es - Embedded service instance
      */
     function hideStandardButton(es) {
-      if (!es || !es.utilAPI || typeof es.utilAPI.hideChatButton !== 'function') {
+      if (
+        !es ||
+        !es.utilAPI ||
+        typeof es.utilAPI.hideChatButton !== "function"
+      ) {
         return;
       }
-      
+
       try {
         es.utilAPI.hideChatButton();
-        console.log('Standard chat button hidden');
+        console.log("Standard chat button hidden");
       } catch (error) {
-        console.warn('Error hiding standard chat button:', error);
+        console.warn("Error hiding standard chat button:", error);
       }
     }
-    
+
     /**
      * Launch the chat window
      * @param {string} buttonType - Type of button used: 'main' or 'circle'
      */
     function launchChat(buttonType) {
-      if (!state.embeddedServiceInstance || 
-          !state.embeddedServiceInstance.utilAPI ||
-          typeof state.embeddedServiceInstance.utilAPI.launchChat !== 'function') {
-        console.warn('launchChat() not available');
+      if (
+        !state.embeddedServiceInstance ||
+        !state.embeddedServiceInstance.utilAPI ||
+        typeof state.embeddedServiceInstance.utilAPI.launchChat !== "function"
+      ) {
+        console.warn("launchChat() not available");
         return;
       }
-      
+
       state.chatClicked = true;
-      state.lastUsedButton = buttonType || 'main';
-      console.log('Launching chat from ' + state.lastUsedButton + ' button...');
-      
+      state.lastUsedButton = buttonType || "main";
+      console.log("Launching chat from " + state.lastUsedButton + " button...");
+
       const result = state.embeddedServiceInstance.utilAPI.launchChat();
-      
-      if (result && typeof result.then === 'function') {
+
+      if (result && typeof result.then === "function") {
         result
-          .then(function() {
-            console.log('Chat launched successfully');
+          .then(function () {
+            console.log("Chat launched successfully");
           })
-          .catch(function(error) {
-            console.error('Error launching chat:', error);
+          .catch(function (error) {
+            console.error("Error launching chat:", error);
           });
       }
     }
-    
+
     // ============================================================================
     // CAR CAROUSEL
     // ============================================================================
-    
+
     /**
      * Create car image element with styling
      * @returns {HTMLImageElement} Configured car image element
      */
     function createCarImage() {
-      const img = document.createElement('img');
+      const img = document.createElement("img");
       img.src = CAR_MODELS[0].url;
       img.alt = CAR_MODELS[0].name;
-      
+
       applyStyles(img, {
-        width: '100%',
-        height: '100%',
-        objectFit: 'contain',
-        display: 'block',
-        transition: 'opacity 0.5s ease, transform 0.3s ease',
-        filter: 'drop-shadow(0 3px 8px rgba(0,0,0,0.2)) brightness(1.15) contrast(1.08) saturate(1.1)',
-        background: 'rgba(255, 255, 255, 0.15)',
-        borderRadius: '16px',
-        padding: '8px',
-        border: '1px solid rgba(255, 255, 255, 0.2)',
-        boxShadow: 'inset 0 1px 2px rgba(255,255,255,0.3)',
-        backdropFilter: 'blur(10px)'
+        width: "100%",
+        height: "100%",
+        objectFit: "contain",
+        display: "block",
+        transition: "opacity 0.5s ease, transform 0.3s ease",
+        filter:
+          "drop-shadow(0 3px 8px rgba(0,0,0,0.2)) brightness(1.15) contrast(1.08) saturate(1.1)",
+        background: "rgba(255, 255, 255, 0.15)",
+        borderRadius: "16px",
+        padding: "8px",
+        border: "1px solid rgba(255, 255, 255, 0.2)",
+        boxShadow: "inset 0 1px 2px rgba(255,255,255,0.3)",
+        backdropFilter: "blur(10px)",
       });
-      
+
       return img;
     }
-    
+
     /**
      * Create modern chat icon for circle button
      * @returns {HTMLElement} Configured chat icon element
      */
     function createChatIcon() {
-      const iconContainer = document.createElement('div');
+      const iconContainer = document.createElement("div");
       iconContainer.innerHTML = `
         <svg width="36" height="36" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
           <path d="M20 2H4C2.9 2 2.01 2.9 2.01 4L2 22L6 18H20C21.1 18 22 17.1 22 16V4C22 2.9 21.1 2 20 2Z" fill="white" opacity="0.95"/>
@@ -399,18 +445,18 @@
           </circle>
         </svg>
       `;
-      
+
       applyStyles(iconContainer, {
-        width: '100%',
-        height: '100%',
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'center'
+        width: "100%",
+        height: "100%",
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "center",
       });
-      
+
       return iconContainer;
     }
-    
+
     /**
      * Start the car carousel animation
      * @param {HTMLImageElement} carImg - Car image element
@@ -420,21 +466,22 @@
       if (state.carouselInterval) {
         clearInterval(state.carouselInterval);
       }
-      
-      state.carouselInterval = setInterval(function() {
-        carImg.style.opacity = '0';
-        
-        setTimeout(function() {
-          state.currentCarIndex = (state.currentCarIndex + 1) % CAR_MODELS.length;
+
+      state.carouselInterval = setInterval(function () {
+        carImg.style.opacity = "0";
+
+        setTimeout(function () {
+          state.currentCarIndex =
+            (state.currentCarIndex + 1) % CAR_MODELS.length;
           const nextCar = CAR_MODELS[state.currentCarIndex];
           carImg.src = nextCar.url;
           carImg.alt = nextCar.name;
-          carImg.style.opacity = '1';
-          console.log('Showing car:', nextCar.name);
+          carImg.style.opacity = "1";
+          console.log("Showing car:", nextCar.name);
         }, TIMING.FADE_DURATION);
       }, TIMING.CAROUSEL_INTERVAL);
     }
-    
+
     /**
      * No carousel needed for circle button - using static icon with CSS animations
      */
@@ -443,278 +490,286 @@
       // No JavaScript carousel needed
       return;
     }
-    
+
     // ============================================================================
     // BUTTON CREATION
     // ============================================================================
-    
+
     /**
      * Create the main chat button
      * @returns {HTMLButtonElement} Configured chat button
      */
     function createChatButton() {
-      const btn = document.createElement('button');
+      const btn = document.createElement("button");
       btn.id = ELEMENT_IDS.CHAT_BUTTON;
-      btn.setAttribute('aria-label', state.localization.message);
-      
+      btn.setAttribute("aria-label", state.localization.message);
+
       const position = getResponsivePosition(false);
-      
+
       applyStyles(btn, {
-        position: 'fixed',
+        position: "fixed",
         right: position.right,
         bottom: position.bottom,
-        zIndex: '99999',
-        padding: '11px 39px',
-        fontSize: '22px',
-        fontWeight: '700',
-        borderRadius: '999px',
-        border: 'none',
-        cursor: 'pointer',
-        boxShadow: '0 12px 32px rgba(0,0,0,0.3), 0 0 40px rgba(100, 160, 40, 0.4)',
+        zIndex: "99999",
+        padding: "11px 39px",
+        fontSize: "22px",
+        fontWeight: "700",
+        borderRadius: "999px",
+        border: "none",
+        cursor: "pointer",
+        boxShadow:
+          "0 12px 32px rgba(0,0,0,0.3), 0 0 40px rgba(100, 160, 40, 0.4)",
         background: COLORS.PRIMARY,
-        backgroundSize: '200% 200%',
+        backgroundSize: "200% 200%",
         color: COLORS.WHITE,
-        display: 'inline-flex',
-        alignItems: 'center',
-        justifyContent: 'center',
-        gap: '18px',
-        transition: 'all 0.3s ease',
-        overflow: 'visible',
+        display: "inline-flex",
+        alignItems: "center",
+        justifyContent: "center",
+        gap: "18px",
+        transition: "all 0.3s ease",
+        overflow: "visible",
         fontFamily: "'Arial', sans-serif",
-        textShadow: '3px 3px 6px rgba(0,0,0,0.4)',
-        minWidth: '284px',
-        minHeight: '77px'
+        textShadow: "3px 3px 6px rgba(0,0,0,0.4)",
+        minWidth: "284px",
+        minHeight: "77px",
       });
-      
+
       // Create icon container with car carousel
-      const iconContainer = document.createElement('div');
+      const iconContainer = document.createElement("div");
       applyStyles(iconContainer, {
-        position: 'relative',
-        width: '85px',
-        height: '60px',
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'center',
-        overflow: 'hidden'
+        position: "relative",
+        width: "85px",
+        height: "60px",
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "center",
+        overflow: "hidden",
       });
-      
+
       const carImg = createCarImage();
       iconContainer.appendChild(carImg);
-      
+
       // Create text span
-      const textSpan = document.createElement('span');
+      const textSpan = document.createElement("span");
       textSpan.textContent = state.localization.message;
-      textSpan.style.letterSpacing = '0.5px';
-      
+      textSpan.style.letterSpacing = "0.5px";
+
       // Create logo
-      const logoImg = document.createElement('img');
-      logoImg.src = 'assets/Leapmotor.png';
-      logoImg.alt = 'Leapmotor';
-      
+      const logoImg = document.createElement("img");
+      logoImg.src = "assets/Leapmotor.png";
+      logoImg.alt = "Leapmotor";
+
       applyStyles(logoImg, {
-        height: '42px',
-        width: 'auto',
-        objectFit: 'contain',
-        marginLeft: '16px',
-        opacity: '1',
-        filter: 'drop-shadow(0 3px 10px rgba(0,0,0,0.2)) brightness(1.25) contrast(1.08)',
-        background: 'transparent',
-        padding: '0',
-        borderRadius: '0',
-        border: 'none',
-        boxShadow: 'none'
+        height: "42px",
+        width: "auto",
+        objectFit: "contain",
+        marginLeft: "16px",
+        opacity: "1",
+        filter:
+          "drop-shadow(0 3px 10px rgba(0,0,0,0.2)) brightness(1.25) contrast(1.08)",
+        background: "transparent",
+        padding: "0",
+        borderRadius: "0",
+        border: "none",
+        boxShadow: "none",
       });
-      
+
       // Assemble button
       btn.appendChild(iconContainer);
       btn.appendChild(textSpan);
       btn.appendChild(logoImg);
-      
+
       // Add event listeners
-      btn.addEventListener('click', function() {
-        launchChat('main');
+      btn.addEventListener("click", function () {
+        launchChat("main");
       });
-      btn.addEventListener('mouseenter', function() {
-        btn.style.transform = 'scale(1.08)';
+      btn.addEventListener("mouseenter", function () {
+        btn.style.transform = "scale(1.08)";
       });
-      btn.addEventListener('mouseleave', function() {
-        btn.style.transform = 'scale(1)';
+      btn.addEventListener("mouseleave", function () {
+        btn.style.transform = "scale(1)";
       });
-      
+
       // Start carousel
       startCarousel(carImg);
-      
+
       return btn;
     }
-    
+
     /**
-     * Create the circular chat button
+     * Create the circular chat button (matches standard Salesforce button position)
      * @returns {HTMLButtonElement} Configured circular button
      */
     function createCircleButton() {
-      const btn = document.createElement('button');
+      const btn = document.createElement("button");
       btn.id = ELEMENT_IDS.CIRCLE_BUTTON;
-      btn.setAttribute('aria-label', 'Open chat');
-      
+      btn.setAttribute("aria-label", "Open chat");
+
       const position = getCircleButtonPosition();
-      
+
       applyStyles(btn, {
-        position: 'fixed',
+        position: "fixed",
         right: position.right,
         bottom: position.bottom,
-        zIndex: '99999',
-        width: '70px',
-        height: '70px',
-        borderRadius: '50%',
-        border: 'none',
-        cursor: 'pointer',
-        boxShadow: '0 8px 24px rgba(0,0,0,0.25), 0 4px 12px rgba(100, 160, 40, 0.3)',
-        background: 'linear-gradient(135deg, ' + COLORS.PRIMARY + ' 0%, #7bc043 100%)',
+        zIndex: "99999",
+        width: "70px",
+        height: "70px",
+        borderRadius: "50%",
+        border: "none",
+        cursor: "pointer",
+        boxShadow:
+          "0 8px 24px rgba(0,0,0,0.25), 0 4px 12px rgba(100, 160, 40, 0.3)",
+        background:
+          "linear-gradient(135deg, " + COLORS.PRIMARY + " 0%, #7bc043 100%)",
         color: COLORS.WHITE,
-        display: 'none',
-        alignItems: 'center',
-        justifyContent: 'center',
-        padding: '0',
-        transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
-        overflow: 'visible',
-        fontFamily: "'Arial', sans-serif"
+        display: "none",
+        alignItems: "center",
+        justifyContent: "center",
+        padding: "0",
+        transition: "all 0.3s cubic-bezier(0.4, 0, 0.2, 1)",
+        overflow: "visible",
+        fontFamily: "'Arial', sans-serif",
       });
-      
+
       // Create chat icon
       const chatIcon = createChatIcon();
       btn.appendChild(chatIcon);
-      
+
       // Add event listeners
-      btn.addEventListener('click', function() {
-        launchChat('circle');
+      btn.addEventListener("click", function () {
+        launchChat("circle");
       });
-      btn.addEventListener('mouseenter', function() {
-        btn.style.transform = 'scale(1.1)';
-        btn.style.boxShadow = '0 12px 32px rgba(0,0,0,0.3), 0 6px 16px rgba(100, 160, 40, 0.5)';
+      btn.addEventListener("mouseenter", function () {
+        btn.style.transform = "scale(1.1)";
+        btn.style.boxShadow =
+          "0 12px 32px rgba(0,0,0,0.3), 0 6px 16px rgba(100, 160, 40, 0.5)";
       });
-      btn.addEventListener('mouseleave', function() {
-        btn.style.transform = 'scale(1)';
-        btn.style.boxShadow = '0 8px 24px rgba(0,0,0,0.25), 0 4px 12px rgba(100, 160, 40, 0.3)';
+      btn.addEventListener("mouseleave", function () {
+        btn.style.transform = "scale(1)";
+        btn.style.boxShadow =
+          "0 8px 24px rgba(0,0,0,0.25), 0 4px 12px rgba(100, 160, 40, 0.3)";
       });
-      
+
       return btn;
     }
-    
+
     /**
      * Create the toggle button
      * @returns {HTMLButtonElement} Configured toggle button
      */
     function createToggleButton() {
-      const toggleBtn = document.createElement('button');
+      const toggleBtn = document.createElement("button");
       toggleBtn.id = ELEMENT_IDS.TOGGLE_BUTTON;
       toggleBtn.textContent = state.localization.toggle.close;
-      toggleBtn.setAttribute('aria-label', state.localization.toggle.close);
-      
+      toggleBtn.setAttribute("aria-label", state.localization.toggle.close);
+
       const position = getResponsivePosition(true);
-      
+
       applyStyles(toggleBtn, {
-        position: 'fixed',
+        position: "fixed",
         right: position.right,
         bottom: position.bottom,
-        zIndex: '99999',
-        padding: '8px 16px',
-        fontSize: '14px',
-        fontWeight: '600',
-        borderRadius: '20px',
-        border: '2px solid ' + COLORS.PRIMARY,
-        cursor: 'pointer',
+        zIndex: "99999",
+        padding: "8px 16px",
+        fontSize: "14px",
+        fontWeight: "600",
+        borderRadius: "20px",
+        border: "2px solid " + COLORS.PRIMARY,
+        cursor: "pointer",
         backgroundColor: COLORS.WHITE,
         color: COLORS.PRIMARY,
-        boxShadow: '0 4px 12px rgba(0,0,0,0.2)',
-        transition: 'all 0.3s ease',
-        fontFamily: "'Arial', sans-serif"
+        boxShadow: "0 4px 12px rgba(0,0,0,0.2)",
+        transition: "all 0.3s ease",
+        fontFamily: "'Arial', sans-serif",
       });
-      
+
       // Toggle functionality
-      toggleBtn.addEventListener('click', function() {
+      toggleBtn.addEventListener("click", function () {
         const mainBtn = document.getElementById(ELEMENT_IDS.CHAT_BUTTON);
         const circleBtn = document.getElementById(ELEMENT_IDS.CIRCLE_BUTTON);
         if (!mainBtn) return;
-        
+
         state.isChatButtonVisible = !state.isChatButtonVisible;
-        
+
         if (state.isChatButtonVisible) {
-          mainBtn.style.display = 'inline-flex';
-          if (circleBtn) circleBtn.style.display = 'none';
+          mainBtn.style.display = "inline-flex";
+          if (circleBtn) circleBtn.style.display = "none";
           toggleBtn.textContent = state.localization.toggle.close;
-          toggleBtn.setAttribute('aria-label', state.localization.toggle.close);
+          toggleBtn.setAttribute("aria-label", state.localization.toggle.close);
         } else {
-          mainBtn.style.display = 'none';
-          if (circleBtn) circleBtn.style.display = 'flex';
+          mainBtn.style.display = "none";
+          if (circleBtn) circleBtn.style.display = "flex";
           toggleBtn.textContent = state.localization.toggle.open;
-          toggleBtn.setAttribute('aria-label', state.localization.toggle.open);
+          toggleBtn.setAttribute("aria-label", state.localization.toggle.open);
         }
       });
-      
+
       return toggleBtn;
     }
-    
+
     // ============================================================================
     // BUTTON VISIBILITY MANAGEMENT
     // ============================================================================
-    
+
     /**
      * Show the custom chat button
      * @param {Object} es - Embedded service instance
      */
     function showCustomCTA(es) {
       if (!es || !es.utilAPI) {
-        console.warn('utilAPI not available');
+        console.warn("utilAPI not available");
         return;
       }
-      
+
       // Check if button already exists
       const existing = document.getElementById(ELEMENT_IDS.CHAT_BUTTON);
       if (existing) {
-        existing.style.display = 'inline-flex';
+        existing.style.display = "inline-flex";
         const circleBtn = document.getElementById(ELEMENT_IDS.CIRCLE_BUTTON);
-        if (circleBtn) circleBtn.style.display = 'none';
+        if (circleBtn) circleBtn.style.display = "none";
         hideStandardButton(es);
-        console.log('Custom CTA shown again');
+        console.log("Custom CTA shown again");
         return;
       }
-      
+
       // Inject styles
       injectStyles();
-      
+
       // Create and append buttons
       const chatButton = createChatButton();
       const toggleButton = createToggleButton();
       const circleButton = createCircleButton();
-      
+
       document.body.appendChild(chatButton);
       document.body.appendChild(toggleButton);
       document.body.appendChild(circleButton);
-      
+
       // Store instance and hide standard button
       state.embeddedServiceInstance = es;
       hideStandardButton(es);
-      
-      console.log('Custom CTA created with Leapmotor electric car carousel and circle button');
+
+      console.log(
+        "Custom CTA created with Leapmotor electric car carousel and circle button (15% higher, circle matches standard position)"
+      );
     }
-    
+
     /**
      * Hide the custom chat button
      */
     function hideCustomCTA() {
       const btn = document.getElementById(ELEMENT_IDS.CHAT_BUTTON);
       if (btn) {
-        btn.style.display = 'none';
-        console.log('Custom CTA hidden');
+        btn.style.display = "none";
+        console.log("Custom CTA hidden");
       }
-      
+
       const circleBtn = document.getElementById(ELEMENT_IDS.CIRCLE_BUTTON);
       if (circleBtn) {
-        circleBtn.style.display = 'none';
-        console.log('Circle button hidden');
+        circleBtn.style.display = "none";
+        console.log("Circle button hidden");
       }
     }
-    
+
     /**
      * Toggle visibility of toggle button
      * @param {boolean} show - Whether to show or hide
@@ -722,110 +777,154 @@
     function toggleButtonVisibility(show) {
       const toggleBtn = document.getElementById(ELEMENT_IDS.TOGGLE_BUTTON);
       if (toggleBtn) {
-        toggleBtn.style.display = show ? 'block' : 'none';
-        console.log('Toggle button ' + (show ? 'shown' : 'hidden'));
+        toggleBtn.style.display = show ? "block" : "none";
+        console.log("Toggle button " + (show ? "shown" : "hidden"));
       }
     }
-    
+
     // ============================================================================
     // EVENT HANDLERS
     // ============================================================================
-    
+
     /**
      * Handle button created event
      */
     function handleButtonCreated() {
-      console.log('onEmbeddedMessagingButtonCreated fired');
+      console.log("onEmbeddedMessagingButtonCreated fired");
       const es = window.embeddedservice_bootstrap;
       if (es) {
         showCustomCTA(es);
       }
     }
-    
+
     /**
      * Handle window maximized event
      */
     function handleWindowMaximized() {
-      console.log('onEmbeddedMessagingWindowMaximized fired');
+      console.log("onEmbeddedMessagingWindowMaximized fired");
       hideCustomCTA();
       toggleButtonVisibility(false);
     }
-    
+
     /**
      * Handle window minimized event
      */
     function handleWindowMinimized() {
-      console.log('onEmbeddedMessagingWindowMinimized fired');
+      console.log("onEmbeddedMessagingWindowMinimized fired");
       const es = window.embeddedservice_bootstrap;
       if (es) {
         hideStandardButton(es);
-        
+
         // Show the button that was last used
         const mainBtn = document.getElementById(ELEMENT_IDS.CHAT_BUTTON);
         const circleBtn = document.getElementById(ELEMENT_IDS.CIRCLE_BUTTON);
-        
-        if (state.lastUsedButton === 'circle') {
+
+        if (state.lastUsedButton === "circle") {
           // Show circle button
-          if (mainBtn) mainBtn.style.display = 'none';
-          if (circleBtn) circleBtn.style.display = 'flex';
+          if (mainBtn) mainBtn.style.display = "none";
+          if (circleBtn) circleBtn.style.display = "flex";
           state.isChatButtonVisible = false;
         } else {
           // Show main button
-          if (mainBtn) mainBtn.style.display = 'inline-flex';
-          if (circleBtn) circleBtn.style.display = 'none';
+          if (mainBtn) mainBtn.style.display = "inline-flex";
+          if (circleBtn) circleBtn.style.display = "none";
           state.isChatButtonVisible = true;
         }
-        
+
         toggleButtonVisibility(true);
       }
     }
-    
+
+    // ============================================================================
+    // RESPONSIVE REPOSITIONING
+    // ============================================================================
+
+    /**
+     * Update button positions on window resize
+     */
+    function updateButtonPositions() {
+      const mainBtn = document.getElementById(ELEMENT_IDS.CHAT_BUTTON);
+      const toggleBtn = document.getElementById(ELEMENT_IDS.TOGGLE_BUTTON);
+      const circleBtn = document.getElementById(ELEMENT_IDS.CIRCLE_BUTTON);
+
+      if (mainBtn) {
+        const mainPos = getResponsivePosition(false);
+        mainBtn.style.right = mainPos.right;
+        mainBtn.style.bottom = mainPos.bottom;
+      }
+
+      if (toggleBtn) {
+        const togglePos = getResponsivePosition(true);
+        toggleBtn.style.right = togglePos.right;
+        toggleBtn.style.bottom = togglePos.bottom;
+      }
+
+      if (circleBtn) {
+        const circlePos = getCircleButtonPosition();
+        circleBtn.style.right = circlePos.right;
+        circleBtn.style.bottom = circlePos.bottom;
+      }
+    }
+
     // ============================================================================
     // INITIALIZATION
     // ============================================================================
-    
+
     /**
      * Poll for embedded service availability
      */
     function waitForEmbeddedService() {
       let attempts = 0;
-      
+
       (function check() {
         attempts++;
         const es = window.embeddedservice_bootstrap;
-        
+
         if (es && es.utilAPI) {
-          console.log('utilAPI ready');
+          console.log("utilAPI ready");
           showCustomCTA(es);
           return;
         }
-        
+
         if (attempts >= TIMING.MAX_POLLING_ATTEMPTS) {
-          console.warn('utilAPI not found after ' + attempts + ' attempts');
+          console.warn("utilAPI not found after " + attempts + " attempts");
           return;
         }
-        
+
         setTimeout(check, TIMING.POLLING_INTERVAL);
       })();
     }
-    
+
     /**
      * Initialize the custom chat button
      */
     function init() {
       // Register event listeners
-      window.addEventListener('onEmbeddedMessagingButtonCreated', handleButtonCreated);
-      window.addEventListener('onEmbeddedMessagingWindowMaximized', handleWindowMaximized);
-      window.addEventListener('onEmbeddedMessagingWindowMinimized', handleWindowMinimized);
-      
+      window.addEventListener(
+        "onEmbeddedMessagingButtonCreated",
+        handleButtonCreated
+      );
+      window.addEventListener(
+        "onEmbeddedMessagingWindowMaximized",
+        handleWindowMaximized
+      );
+      window.addEventListener(
+        "onEmbeddedMessagingWindowMinimized",
+        handleWindowMinimized
+      );
+      window.addEventListener("resize", updateButtonPositions);
+
       // Start polling for embedded service
-      if (document.readyState === 'complete' || document.readyState === 'interactive') {
+      if (
+        document.readyState === "complete" ||
+        document.readyState === "interactive"
+      ) {
         waitForEmbeddedService();
       } else {
-        window.addEventListener('DOMContentLoaded', waitForEmbeddedService);
+        window.addEventListener("DOMContentLoaded", waitForEmbeddedService);
       }
     }
-    
+
     // Start initialization
     init();
   })();
@@ -835,5 +934,6 @@
   src="https://leapmotor--dev01.sandbox.my.site.com/ESWLPMLeapmotor1760706603231/assets/js/bootstrap.min.js"
   onload="initEmbeddedMessaging()"
 ></script>
+
 </body>
 </html>
