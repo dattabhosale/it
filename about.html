@@ -34,7 +34,7 @@
   </footer>
 
   <script src="js/main.js"></script>
-  <script type="text/javascript">
+<script type="text/javascript">
   /**
    * Initialize Salesforce Embedded Messaging with country-specific settings
    */
@@ -47,7 +47,13 @@
       embeddedservice_bootstrap.settings.language = countryInfo.language;
       embeddedservice_bootstrap.settings.shouldOpenLinksInSameTab = true;
       embeddedservice_bootstrap.settings.hideChatButtonOnLoad = true;
-      embeddedservice_bootstrap.settings.chatButtonPosition = "200px, 30px";
+      
+      // Calculate position to match custom circular button (20px base - 5% viewport adjustment)
+      const viewportHeight = window.innerHeight;
+      const adjustment = viewportHeight * 0.05;
+      const bottomPosition = Math.max(0, 20 - adjustment); // Ensure non-negative
+      embeddedservice_bootstrap.settings.chatButtonPosition = bottomPosition + 'px, 20px';
+
 
       console.log(
         "Detected country code:",
@@ -208,20 +214,20 @@
     // ============================================================================
 
     /**
-     * Calculate 15% upward adjustment for bottom position
+     * Calculate 5% downward adjustment for bottom position
      * @param {string} bottomValue - Original bottom value (e.g., '12px')
      * @returns {string} Adjusted bottom value
      */
     function adjustBottomPosition(bottomValue) {
       const numericValue = parseFloat(bottomValue);
       const viewportHeight = window.innerHeight;
-      const adjustment = viewportHeight * 0.15; // 15% of viewport height
-      const newValue = numericValue + adjustment;
-      return newValue + "px";
+      const adjustment = viewportHeight * 0.05; // 5% of viewport height
+      const newValue = numericValue - adjustment; // Subtract to move down
+      return newValue + 'px';
     }
 
     /**
-     * Get responsive positioning based on screen width (moved 15% up)
+     * Get responsive positioning based on screen width (moved 5% down)
      * @returns {Object} Position object with right and bottom values
      */
     function getResponsivePosition(isToggle) {
@@ -743,13 +749,12 @@
       document.body.appendChild(chatButton);
       document.body.appendChild(toggleButton);
       document.body.appendChild(circleButton);
-
       // Store instance and hide standard button
       state.embeddedServiceInstance = es;
       hideStandardButton(es);
 
       console.log(
-        "Custom CTA created with Leapmotor electric car carousel and circle button (15% higher, circle matches standard position)"
+        'Custom CTA created with Leapmotor electric car carousel and circle button (5% lower, standard button aligned with circular button)'
       );
     }
 
