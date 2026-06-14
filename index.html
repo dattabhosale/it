@@ -121,6 +121,53 @@
                 <span class="spec">⚡ 520 CV</span>
                 <span class="spec">⏱️ 0-100: 3.8s</span>
               </div>
+              <button id="customChatButton" class="chat-fab">
+  <span>💬</span>
+  <span class="chat-label">Chat with us</span>
+</button>
+<style>
+.chat-fab {
+  position: fixed;
+  bottom: 100px;
+  right: 30px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 12px 18px;
+  background: linear-gradient(135deg, #0070d2, #005bb5);
+  color: #fff;
+  font-size: 14px;
+  font-weight: 600;
+  border-radius: 40px;
+  border: none;
+  cursor: pointer;
+  box-shadow: 0 8px 25px rgba(0,0,0,0.25);
+  z-index: 2147483647;
+  transition: all 0.3s ease;
+}
+
+.chat-fab:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 12px 35px rgba(0,0,0,0.3);
+}
+
+.chat-fab span:first-child {
+  background: rgba(255,255,255,0.2);
+  padding: 6px;
+  border-radius: 50%;
+}
+
+@media (max-width: 768px) {
+  .chat-label {
+    display: none;
+  }
+
+  .chat-fab {
+    padding: 14px;
+    border-radius: 50%;
+  }
+}
+</style>
               <div class="vehicle-footer">
                 <span class="vehicle-price">€125.000</span>
                 <button class="details-button">Vedi Dettagli</button>
@@ -235,84 +282,223 @@
     </footer>
     <script src="script.js"></script>
     <script type='text/javascript'>
+<!-- ======================== SALESFORCE EMBEDDED MESSAGING (FULL CORRECTED) ======================== -->
+
+<script type="text/javascript">
 /**
-* Salesforce Embedded Messaging - Improved Implementation
-* Fixes: Dynamic country settings, race conditions, performance optimizations
-*/
-// ======================== CONFIGURATION =========================
+ * Salesforce Embedded Messaging - Corrected Implementation
+ * - Dynamic country settings (path-based)
+ * - Dynamic bootstrap loading (UK vs Default)
+ * - Init-once guards (prevents duplicate listeners)
+ * - Uses documented launchChat API
+ * - Keeps advanced mobile/iOS keyboard/scroll handling
+ */
+
+/* ======================== CONFIGURATION ========================= */
 const ESW_CONFIG = {
-  ORG_ID: '00DMA000003XnGM',
-  DEPLOYMENT_NAME: 'LPM_Leapmotor',
-  SITE_URL: 'https://leapmotor--dev01.sandbox.my.site.com/ESWLPMLeapmotor1760706603231',
-  SCRT2_URL: 'https://leapmotor--dev01.sandbox.my.salesforce-scrt.com',
-  COUNTRY_MAPPING: {
-    'it': { name: 'Italy', language: 'it', code: 'it' },
-    'es': { name: 'Spain', language: 'es', code: 'es' },
-    'fr': { name: 'France', language: 'fr', code: 'fr' },
-    'de': { name: 'Germany', language: 'de', code: 'de' },
-    'uk': { name: 'United Kingdom', language: 'en_US', code: 'uk' },
-    'us': { name: 'United States', language: 'en_US', code: 'us' },
-    'be-fr': { name: 'Belgium_FR', language: 'fr', code: 'be' },
-    'be-nl': { name: 'Belgium_NL', language: 'nl_NL', code: 'be' },
-    'us': { name: 'United States', language: 'en_US', code: 'us' },
-    'en': { name: 'United States', language: 'en_US', code: 'en' }
+  ORG_ID: '00DUA000003t2Uy',
+
+  // Default (non-UK) deployment
+  DEFAULT: {
+    DEPLOYMENT_NAME: 'Github_Test_1',
+    SITE_URL: 'https://leapmotor--uat.sandbox.my.site.com/ESWGithubTest1772119881058',
+    SCRT2_URL: 'https://leapmotor--uat.sandbox.my.salesforce-scrt.com'
   },
-  DEFAULT_COUNTRY: 'it'
+
+  // UK deployment
+  UK: {
+    DEPLOYMENT_NAME: 'Leapmotor_Test_Site_UK',
+    SITE_URL: 'https://leapmotor--uat.sandbox.my.site.com/ESWLeapmotorTestSiteUK1780833600674',
+    SCRT2_URL: 'https://leapmotor--uat.sandbox.my.salesforce-scrt.com'
+  },
+
+  COUNTRY_MAPPING: {
+    'it':    { name: 'Italy',           language: 'it',    code: 'it' },
+    'es':    { name: 'Spain',           language: 'es',    code: 'es' },
+    'fr':    { name: 'France',          language: 'fr',    code: 'fr' },
+    'de':    { name: 'Germany',         language: 'de',    code: 'de' },
+    'at-de': { name: 'Austria',         language: 'de',    code: 'at' },
+    'lu':    { name: 'Luxembourg',      language: 'fr',    code: 'lu' },
+    'nl':    { name: 'Netherlands',     language: 'nl_NL', code: 'nl' },
+    'pl':    { name: 'Poland',          language: 'pl',    code: 'pl' },
+    'pt':    { name: 'Portugal',        language: 'pt_PT', code: 'pt' },
+    'uk':    { name: 'United Kingdom',  language: 'en_US', code: 'uk' },
+    'be-fr': { name: 'Belgium_FR',      language: 'fr',    code: 'be' },
+    'be-nl': { name: 'Belgium_NL',      language: 'nl_NL', code: 'be' }
+  },
+
+  // Keep as-is from your current logic; unknown paths fall back to UK deployment/language.
+  DEFAULT_COUNTRY: 'uk'
 };
-/**
-* Extract country code from URL pathname
-* @returns {string} Country code (defaults to 'it')
-*/
+
+/* ======================== HELPERS ========================= */
 function getCountryCodeFromPath() {
   const pathParts = window.location.pathname
     .split('/')
     .filter(function(part) { return part.length > 0; });
   return pathParts.length > 0 ? pathParts[0].toLowerCase() : ESW_CONFIG.DEFAULT_COUNTRY;
 }
-/**
-* Get country information based on country code
-* @param {string} countryCode - Two-letter country code
-* @returns {Object} Country information object
-*/
+
 function getCountryInfo(countryCode) {
-  return ESW_CONFIG.COUNTRY_MAPPING[countryCode] || ESW_CONFIG.COUNTRY_MAPPING[ESW_CONFIG.DEFAULT_COUNTRY];
+  return ESW_CONFIG.COUNTRY_MAPPING[countryCode] ||
+         ESW_CONFIG.COUNTRY_MAPPING[ESW_CONFIG.DEFAULT_COUNTRY];
 }
+
 /**
-* Initialize Embedded Messaging with dynamic country settings
-*/
+ * Get runtime ESW deployment based on country.
+ * Currently only UK differs; everything else uses DEFAULT.
+ */
+function getRuntimeDeployment(countryInfo) {
+  const isUK = (countryInfo && countryInfo.code === 'uk');
+  return isUK ? ESW_CONFIG.UK : ESW_CONFIG.DEFAULT;
+}
+
+function launchEmbeddedMessagingChat() {
+  try {
+    if (
+      window.embeddedservice_bootstrap &&
+      window.embeddedservice_bootstrap.utilAPI &&
+      typeof window.embeddedservice_bootstrap.utilAPI.launchChat === 'function'
+    ) {
+      window.embeddedservice_bootstrap.utilAPI.launchChat()
+        .catch(function(err) {
+          console.error('[ESW] launchChat failed:', err);
+        });
+    } else {
+      console.warn('[ESW] utilAPI.launchChat is not available yet.');
+    }
+  } catch (err) {
+    console.error('[ESW] Error while launching chat:', err);
+  }
+}
+
+/* ======================== CUSTOM BUTTON INTEGRATION ========================= */
+function openCustomChat() {
+  launchEmbeddedMessagingChat(); // reuse your existing function
+}
+
+// Attach button listener safely after DOM is ready
+(function setupCustomChatButton() {
+  function attachHandler() {
+    const btn = document.getElementById('customChatButton');
+    if (!btn) return;
+
+    // Disable initially
+    btn.style.opacity = '0.6';
+    btn.style.pointerEvents = 'none';
+
+    // Enable when Salesforce is ready
+    window.addEventListener('onEmbeddedMessagingReady', function () {
+      btn.style.opacity = '1';
+      btn.style.pointerEvents = 'auto';
+    });
+
+    // Click → launch chat
+    btn.addEventListener('click', function () {
+      openCustomChat();
+    });
+  }
+
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', attachHandler);
+  } else {
+    attachHandler();
+  }
+})();
+
+/* ======================== INIT (GUARDED) ========================= */
 function initEmbeddedMessaging() {
   try {
+    // Prevent duplicate init (SPA / re-injection)
+    if (window.__ESW_INIT_DONE__) return;
+    window.__ESW_INIT_DONE__ = true;
+
     const countryCode = getCountryCodeFromPath();
     const countryInfo = getCountryInfo(countryCode);
-    // Configure embedded service settings
+    const runtime = getRuntimeDeployment(countryInfo);
+
+    // Safety check
+    if (!window.embeddedservice_bootstrap) {
+      console.error('[ESW] embeddedservice_bootstrap not available (bootstrap not loaded).');
+      return;
+    }
+
+    // Settings
     embeddedservice_bootstrap.settings.shouldOpenLinksInSameTab = true;
     embeddedservice_bootstrap.settings.language = countryInfo.language;
-    // Set up pre-chat fields with dynamic country info
-    window.addEventListener("onEmbeddedMessagingReady", function() {
-      embeddedservice_bootstrap.prechatAPI.setHiddenPrechatFields({
-        Country: countryInfo.name,
-        Language: countryInfo.language,
-        CountryCode: countryInfo.code
-      });
+
+    // Hidden pre-chat fields
+    // (Make sure these exist/mapped in Messaging Settings + Deployment Pre-Chat hidden fields)
+    window.addEventListener('onEmbeddedMessagingReady', function onReadyOnce() {
+      if (window.__ESW_READY_DONE__) return;
+      window.__ESW_READY_DONE__ = true;
+
+      try {
+        embeddedservice_bootstrap.prechatAPI.setHiddenPrechatFields({
+          Country: countryInfo.name,
+          Language: countryInfo.language,
+          CountryCode: countryInfo.code
+        });
+      } catch (e) {
+        console.error('[ESW] Failed to set hidden pre-chat fields:', e);
+      }
     });
-    // Initialize the embedded service
+
+    // Init
     embeddedservice_bootstrap.init(
       ESW_CONFIG.ORG_ID,
-      ESW_CONFIG.DEPLOYMENT_NAME,
-      ESW_CONFIG.SITE_URL,
-      {
-        scrt2URL: ESW_CONFIG.SCRT2_URL
-      }
+      runtime.DEPLOYMENT_NAME,
+      runtime.SITE_URL,
+      { scrt2URL: runtime.SCRT2_URL }
     );
   } catch (err) {
     console.error('[ESW] Error loading Embedded Messaging:', err);
   }
 }
+
+/* ======================== DYNAMIC BOOTSTRAP LOADER =========================
+   Loads bootstrap.min.js from the SAME SITE URL used by init()
+   (Fixes UK vs Default mismatch)
+*/
+(function loadEmbeddedMessagingBootstrap() {
+  try {
+    if (window.embeddedservice_bootstrap) {
+      initEmbeddedMessaging();
+      return;
+    }
+
+    // Avoid double script injection
+    if (document.getElementById('esw-bootstrap')) return;
+
+    const countryCode = getCountryCodeFromPath();
+    const countryInfo = getCountryInfo(countryCode);
+    const runtime = getRuntimeDeployment(countryInfo);
+
+    const s = document.createElement('script');
+    s.id = 'esw-bootstrap';
+    s.type = 'text/javascript';
+    s.src = runtime.SITE_URL + '/assets/js/bootstrap.min.js';
+    s.onload = function() { initEmbeddedMessaging(); };
+    s.onerror = function() {
+      console.error('[ESW] Failed to load bootstrap:', s.src);
+    };
+
+    (document.body || document.head || document.documentElement).appendChild(s);
+  } catch (e) {
+    console.error('[ESW] Bootstrap loader failed:', e);
+  }
+})();
 </script>
+
 <!-- ======================== ADVANCED CONTROL ======================== -->
-<script type='text/javascript'>
+<script type="text/javascript">
 (function () {
   'use strict';
+
+  // Guard against duplicate listener/observer registration
+  if (window.__ESW_ADVANCED_CONTROL_INIT__) return;
+  window.__ESW_ADVANCED_CONTROL_INIT__ = true;
+
   /* ====== Configuration ====== */
   const CONFIG = {
     NUDGE_DELAY_MS: 30000,
@@ -322,71 +508,55 @@ function initEmbeddedMessaging() {
     MIN_CHAT_WIDTH: 200,
     RETRY_DELAYS: [80, 220, 500]
   };
+
   const MESSAGES = {
-    es: {
-      first: '¡Habla conmigo!',
-      followup: '¡Sigue hablándome!'
-    },
-    it: {
-      first: 'Parlami!',
-      followup: 'Continua a parlarmi!'
-    },
-    fr: {
-      first: 'Parle-moi!',
-      followup: 'Continue de me parler!'
-    },
-    de: {
-      first: 'Sprich mit mir!',
-      followup: 'Sprich weiter mit mir!'
-    },
-    en: {
-      first: 'Talk to me!',
-      followup: 'Keep talking to me!'
-    }
+    es:      { first: '¡Habla conmigo!',            followup: '¡Sigue hablándome!' },
+    it:      { first: 'Parlami!',                   followup: 'Continua a parlarmi!' },
+    fr:      { first: 'Parle-moi !',                followup: 'Continue à me parler !' },
+    de:      { first: 'Hast du Fragen?',            followup: 'Sprich weiter mit mir!' },
+    'at-de': { first: 'Sprich mit mir!',            followup: 'Sprich weiter mit mir!' },
+    lu:      { first: 'Parle-moi !',                followup: 'Continue à me parler !' },
+    nl:      { first: 'Praat met me!',              followup: 'Blijf met me praten!' },
+    pl:      { first: 'Porozmawiaj ze mną!',        followup: 'Kontynuuj rozmowę ze mną!' },
+    pt:      { first: 'Fala comigo!',               followup: 'Continua a falar comigo!' },
+    en:      { first: 'Talk to me!',                followup: 'Keep talking to me!' },
+    uk:      { first: 'Talk to me!',                followup: 'Keep talking to me!' },
+    us:      { first: 'Talk to me!',                followup: 'Keep talking to me!' },
+    'be-fr': { first: 'Parle-moi !',                followup: 'Continue à me parler !' },
+    'be-nl': { first: 'Praat met me!',              followup: 'Praat verder met me!' }
   };
+
   /* ====== State ====== */
   const state = {
     chatEverOpened: false,
     chatCurrentlyOpen: false,
     nudgeElement: null,
     nudgeBottomPosition: null,
-    timers: {
-      first: null,
-      followup: null
-    },
-    observers: {
-      launcher: null,
-      body: null,
-      fixedRoot: null,
-      statePoller: null
-    }
+    timers: { first: null, followup: null },
+    observers: { launcher: null, body: null, fixedRoot: null, statePoller: null }
   };
-  /* ====== Utility Functions ====== */
+
+  /* ====== Utility ====== */
   const isMobile = () => window.innerWidth < CONFIG.DESKTOP_MIN_WIDTH;
-  function getCountryCode() {
-    return getCountryCodeFromPath();
-  }
+  function getCountryCode() { return getCountryCodeFromPath(); }
   function getLocalizedMessages() {
     const code = getCountryCode();
-    return MESSAGES[code] || MESSAGES.it;
+    return MESSAGES[code] || MESSAGES.en;
   }
   function clearTimer(timerName) {
     if (state.timers[timerName]) {
-      console.log(`[TIMER] Clearing ${timerName} timer`);
       clearTimeout(state.timers[timerName]);
       state.timers[timerName] = null;
     }
   }
-  function clearAllTimers() {
-    clearTimer('first');
-    clearTimer('followup');
-  }
+  function clearAllTimers() { clearTimer('first'); clearTimer('followup'); }
   function disconnectObserver(observerName) {
     if (state.observers[observerName]) {
       state.observers[observerName].disconnect();
       state.observers[observerName] = null;
     }
   }
+
   /* ====== DOM Element Getters ====== */
   function getLauncherEl() {
     return (
@@ -398,6 +568,7 @@ function initEmbeddedMessaging() {
       document.querySelector('button[class*="Launcher"], div[class*="Launcher"]')
     );
   }
+
   function getChatFrameEl() {
     return (
       document.querySelector('.embeddedMessagingFrame') ||
@@ -406,6 +577,7 @@ function initEmbeddedMessaging() {
       document.querySelector('iframe[id*="embeddedMessaging"]')
     );
   }
+
   function getFixedRootEl() {
     const frame = getChatFrameEl();
     if (!frame) return null;
@@ -417,33 +589,246 @@ function initEmbeddedMessaging() {
     }
     return document.querySelector('#embedded-messaging') || null;
   }
+
   function getHeaderEl() {
     const fromAttr = document.body?.getAttribute?.('data-esw-header');
     const candidates = (fromAttr ? fromAttr.split(',') : [])
       .map(s => s.trim())
       .filter(Boolean);
+
     const defaults = [
       'header.site-header', 'header.navbar', 'header#header', '#site-header',
       'header.header', 'header', '.topbar', '.navbar'
     ];
+
     for (const sel of [...candidates, ...defaults]) {
       const el = document.querySelector(sel);
       if (el) return el;
     }
     return null;
   }
-  /* ====== Header Height Management ====== */
+
+  /* ====== CSS Vars: header height ====== */
   function updateHeaderHeightVar() {
-    const h = getHeaderEl()?.offsetHeight || 60;
+    const header = getHeaderEl();
+    const h = header
+      ? Math.round(header.getBoundingClientRect().height || header.offsetHeight || 60)
+      : 60;
     document.documentElement.style.setProperty('--site-header-height', h + 'px');
   }
+
+  /* ============================================================
+     FIX iOS 18: ANTI-OSCILLAZIONI (LOCK + HYSTERESIS)
+     ============================================================ */
+  let __vvRAF = 0;
+  let __baselineH = null;
+  let __keyboardOpen = false;
+  let __lockedH = null;
+  let __lastApplied = null;
+
+  function __roundH(px) { return Math.round(px / 4) * 4; }
+  function __getVVH() {
+    const vv = window.visualViewport;
+    const h = vv ? vv.height : window.innerHeight;
+    return __roundH(h);
+  }
+  function __applyViewportVars(vvh) {
+    document.documentElement.style.setProperty('--vvh', vvh + 'px');
+    document.documentElement.style.setProperty('--vv-offset-top', '0px');
+  }
+  function __applyOnce(vvh) {
+    if (__lastApplied === vvh) return;
+    __lastApplied = vvh;
+    if (__vvRAF) cancelAnimationFrame(__vvRAF);
+    __vvRAF = requestAnimationFrame(() => {
+      __applyViewportVars(vvh);
+      __vvRAF = 0;
+    });
+  }
+
+  /* ============================================================
+     SCROLL GUARD iOS 18 (blocks auto-scroll to top)
+     ============================================================ */
+  let __pageScrollY = 0;
+  let __guardAnchorWindowY = 0;
+  let __guardRAF = 0;
+  let __guardUntil = 0;
+  let __guardScrollApplying = false;
+
+  function lockPageScrollPersistent() {
+    if (!isMobile()) return;
+    if (document.body.classList.contains('page-scroll-locked')) return;
+    __pageScrollY = window.scrollY || window.pageYOffset || 0;
+    document.body.classList.add('page-scroll-locked');
+    document.body.style.top = `-${__pageScrollY}px`;
+    __guardAnchorWindowY = 0;
+    try { window.scrollTo(0, 0); } catch(e) {}
+  }
+
+  function unlockPageScrollPersistent() {
+    if (!document.body.classList.contains('page-scroll-locked')) return;
+    stopScrollGuard();
+    document.body.classList.remove('page-scroll-locked');
+    const y = __pageScrollY;
+    document.body.style.top = '';
+    window.scrollTo(0, y);
+  }
+
+  function startScrollGuard(ms = 1600) {
+    if (!isMobile()) return;
+    if (!document.body.classList.contains('esw-open')) return;
+
+    lockPageScrollPersistent();
+    __guardUntil = Date.now() + ms;
+
+    if (__guardRAF) cancelAnimationFrame(__guardRAF);
+
+    const tick = () => {
+      if (!document.body.classList.contains('esw-open')) {
+        __guardRAF = 0;
+        return;
+      }
+
+      const y = window.scrollY || window.pageYOffset || 0;
+      if (y !== __guardAnchorWindowY) {
+        __guardScrollApplying = true;
+        window.scrollTo(0, __guardAnchorWindowY);
+        document.documentElement.scrollTop = __guardAnchorWindowY;
+        document.body.scrollTop = __guardAnchorWindowY;
+        document.body.style.top = `-${__pageScrollY}px`;
+        __guardScrollApplying = false;
+      }
+
+      if (Date.now() < __guardUntil) {
+        __guardRAF = requestAnimationFrame(tick);
+      } else {
+        __guardRAF = 0;
+      }
+    };
+
+    __guardRAF = requestAnimationFrame(tick);
+  }
+
+  function stopScrollGuard() {
+    if (__guardRAF) cancelAnimationFrame(__guardRAF);
+    __guardRAF = 0;
+    __guardUntil = 0;
+  }
+
+  window.addEventListener('scroll', () => {
+    if (!isMobile()) return;
+    if (!document.body.classList.contains('esw-open')) return;
+    if (__guardScrollApplying) return;
+
+    const y = window.scrollY || window.pageYOffset || 0;
+    if (y !== __guardAnchorWindowY) {
+      __guardScrollApplying = true;
+      window.scrollTo(0, __guardAnchorWindowY);
+      document.documentElement.scrollTop = __guardAnchorWindowY;
+      document.body.scrollTop = __guardAnchorWindowY;
+      document.body.style.top = `-${__pageScrollY}px`;
+      __guardScrollApplying = false;
+    }
+  }, { passive: true });
+
+  try {
+    if ('scrollRestoration' in history) history.scrollRestoration = 'manual';
+  } catch(e) {}
+
+  function updateVisualViewportVars() {
+    const h = __getVVH();
+
+    if (__baselineH === null) {
+      __baselineH = h;
+      __applyOnce(h);
+      return;
+    }
+
+    const OPEN_THRESHOLD = 160;
+    const CLOSE_THRESHOLD = 90;
+    const MIN_DELTA_APPLY = 16;
+
+    if (!__keyboardOpen && (__baselineH - h) > OPEN_THRESHOLD) {
+      __keyboardOpen = true;
+      startScrollGuard(1800);
+      __lockedH = h;
+      __applyOnce(__lockedH);
+      return;
+    }
+
+    if (__keyboardOpen) {
+      if (h < (__lockedH - MIN_DELTA_APPLY)) {
+        __lockedH = h;
+        __applyOnce(__lockedH);
+        return;
+      }
+
+      if (h >= (__baselineH - CLOSE_THRESHOLD)) {
+        __keyboardOpen = false;
+        __lockedH = null;
+        __baselineH = h;
+        __applyOnce(h);
+        startScrollGuard(600);
+        return;
+      }
+
+      return;
+    }
+
+    if (Math.abs(h - __baselineH) > MIN_DELTA_APPLY) {
+      __baselineH = h;
+      __applyOnce(h);
+    }
+  }
+
+  function initMobileViewportTracking() {
+    updateHeaderHeightVar();
+    updateVisualViewportVars();
+
+    const header = getHeaderEl();
+    if (header && 'ResizeObserver' in window) {
+      const ro = new ResizeObserver(() => updateHeaderHeightVar());
+      ro.observe(header);
+    }
+
+    if (window.visualViewport) {
+      window.visualViewport.addEventListener('resize', updateVisualViewportVars);
+    }
+
+    window.addEventListener('resize', () => {
+      updateHeaderHeightVar();
+      updateVisualViewportVars();
+    });
+
+    setTimeout(updateVisualViewportVars, 80);
+    setTimeout(updateVisualViewportVars, 260);
+  }
+
   /* ====== Style Locking ====== */
+  function updateNudgePosition() {
+    if (isMobile() || !state.nudgeElement) return;
+
+    const launcher = getLauncherEl();
+    if (launcher) {
+      if (state.nudgeBottomPosition === null) {
+        const rect = launcher.getBoundingClientRect();
+        const bottom = Math.max(0, window.innerHeight - rect.top + 20);
+        const maxBottom = window.innerHeight - 50;
+        const minBottom = 20;
+        state.nudgeBottomPosition = Math.min(Math.max(bottom, minBottom), maxBottom);
+      }
+      state.nudgeElement.style.bottom = state.nudgeBottomPosition + 'px';
+    }
+  }
+
   function lockLauncherStyle() {
     const launcher = getLauncherEl();
     if (!launcher) return;
+
     const cs = getComputedStyle(document.documentElement);
     const bottom = cs.getPropertyValue('--chat-launcher-bottom').trim() || '60px';
     const right = cs.getPropertyValue('--chat-launcher-right').trim() || '30px';
+
     launcher.style.position = 'fixed';
     launcher.style.bottom = bottom;
     launcher.style.right = right;
@@ -452,15 +837,19 @@ function initEmbeddedMessaging() {
     launcher.style.transform = 'none';
     launcher.style.transition = 'none';
     launcher.style.zIndex = '2147483647';
+
     updateNudgePosition();
   }
+
   function lockFixedRootStyle() {
     const root = getFixedRootEl();
     if (!root) return;
+
     if (!isMobile()) {
       const cs = getComputedStyle(document.documentElement);
       const gap = cs.getPropertyValue('--chat-frame-bottom-gap').trim() || '40px';
       const rightGap = cs.getPropertyValue('--chat-frame-right-gap').trim() || '30px';
+
       root.style.position = 'fixed';
       root.style.top = 'auto';
       root.style.left = 'auto';
@@ -470,9 +859,11 @@ function initEmbeddedMessaging() {
       root.style.zIndex = '2147483645';
     }
   }
+
   function applyStylesWithRetry() {
     lockLauncherStyle();
     lockFixedRootStyle();
+
     CONFIG.RETRY_DELAYS.forEach(delay => {
       setTimeout(() => {
         lockLauncherStyle();
@@ -480,22 +871,26 @@ function initEmbeddedMessaging() {
       }, delay);
     });
   }
+
   /* ====== Observer Setup ====== */
   function observeDynamicElements() {
-    // Launcher observer
     disconnectObserver('launcher');
     const launcher = getLauncherEl();
+
     if (launcher) {
       state.observers.launcher = new MutationObserver(() => lockLauncherStyle());
       state.observers.launcher.observe(launcher, {
         attributes: true,
         attributeFilter: ['style', 'class', 'aria-expanded', 'aria-pressed']
       });
+
       launcher.addEventListener('click', () => {
+        lockPageScrollPersistent();
+        startScrollGuard(1600);
         setTimeout(evaluateAndApplyOpenState, 350);
       }, { capture: true, once: false });
     }
-    // Fixed root observer
+
     disconnectObserver('fixedRoot');
     const root = getFixedRootEl();
     if (root) {
@@ -505,8 +900,8 @@ function initEmbeddedMessaging() {
         attributeFilter: ['style', 'class']
       });
     }
-    // Body observer (only set up once)
-    if (!state.observers.body) {
+
+    if (!state.observers.body && document.body) {
       state.observers.body = new MutationObserver(() => {
         lockLauncherStyle();
         lockFixedRootStyle();
@@ -517,68 +912,34 @@ function initEmbeddedMessaging() {
       });
     }
   }
-  function forceMobileFullscreen() {
-  if (!isMobile()) return;
-  const headerH = getHeaderEl()?.offsetHeight || 60;
-  const targets = [
-    document.querySelector('#embedded-messaging'),
-    getFixedRootEl(),
-    getChatFrameEl()
-  ].filter(Boolean);
-  targets.forEach(el => {
-    el.style.position = 'fixed';
-    el.style.inset = `${headerH}px 0 0 0`;
-    el.style.width = 'auto';
-    el.style.maxWidth = 'none';
-    el.style.height = `calc(100dvh - ${headerH}px)`;
-    el.style.maxHeight = `calc(100dvh - ${headerH}px)`;
-    el.style.margin = '0';
-  });
-}
-  function forceConversationFullWidth() {
-    if (!isMobile()) return;
-    const selectors = [
-      '.embeddedMessagingConversation',
-      '.embeddedMessagingWindow',
-      '.embeddedMessagingFrameContainer',
-      '.embeddedMessagingHeader',
-      '.embeddedMessagingConversationBody'
-    ];
-    selectors.forEach(sel => {
-      document.querySelectorAll(sel).forEach(el => {
-        el.style.width = 'auto';
-        el.style.maxWidth = 'none';
-        el.style.margin = '0';
-        el.style.left = '0';
-        el.style.right = '0';
-      });
-    });
-  }
-  /* ====== Nudge Management ====== */
+
+  /* ====== Nudge ====== */
   function showNudge(message) {
-    console.log('[NUDGE] Attempting to show nudge:', message);
-    if (state.nudgeElement) {
-      console.log('[NUDGE] Nudge already visible, skipping');
-      return;
-    }
+    if (state.nudgeElement) return;
+
     state.nudgeElement = document.createElement('div');
     state.nudgeElement.className = 'chat-nudge';
     state.nudgeElement.textContent = message;
+
     const closeBtn = document.createElement('span');
     closeBtn.className = 'close-btn';
     closeBtn.textContent = '×';
     closeBtn.onclick = function (e) {
-      console.log('[NUDGE] Closed manually');
       e.stopPropagation();
       removeNudge();
     };
+
     state.nudgeElement.appendChild(closeBtn);
+
     state.nudgeElement.onclick = function () {
-      console.log('[NUDGE] Clicked - opening chat');
-      window.embeddedservice_bootstrap?.open?.();
+      lockPageScrollPersistent();
+      startScrollGuard(1600);
+      launchEmbeddedMessagingChat();
       removeNudge();
     };
+
     document.body.appendChild(state.nudgeElement);
+
     if (!isMobile()) {
       if (state.nudgeBottomPosition === null) {
         const launcher = getLauncherEl();
@@ -592,201 +953,177 @@ function initEmbeddedMessaging() {
       }
       state.nudgeElement.style.bottom = state.nudgeBottomPosition + 'px';
     }
-    console.log('[NUDGE] Nudge displayed');
   }
+
   function removeNudge() {
     if (state.nudgeElement) {
-      console.log('[NUDGE] Removing nudge');
       state.nudgeElement.remove();
       state.nudgeElement = null;
     }
   }
-  function updateNudgePosition() {
-    if (isMobile() || !state.nudgeElement) return;
-    const launcher = getLauncherEl();
-    if (launcher) {
-      if (state.nudgeBottomPosition === null) {
-        const rect = launcher.getBoundingClientRect();
-        const bottom = Math.max(0, window.innerHeight - rect.top + 20);
-        const maxBottom = window.innerHeight - 50;
-        const minBottom = 20;
-        state.nudgeBottomPosition = Math.min(Math.max(bottom, minBottom), maxBottom);
-      }
-      state.nudgeElement.style.bottom = state.nudgeBottomPosition + 'px';
-    }
-  }
+
   /* ====== State Detection ====== */
   function isOpenState() {
     const frame = getChatFrameEl();
     const root = getFixedRootEl();
     if (!frame || !root) return false;
+
     const fs = getComputedStyle(frame);
     const fr = frame.getBoundingClientRect();
-    const rs = getComputedStyle(root);
     const rr = root.getBoundingClientRect();
-    const frameVisible = (
+
+    const frameVisible =
       fs.display !== 'none' &&
       fs.visibility !== 'hidden' &&
       fr.height > CONFIG.MIN_CHAT_HEIGHT &&
-      fr.width > CONFIG.MIN_CHAT_WIDTH
-    );
-    const rootLarge = (rr.height > CONFIG.MIN_CHAT_HEIGHT);
+      fr.width > CONFIG.MIN_CHAT_WIDTH;
+
+    const rootLarge = rr.height > CONFIG.MIN_CHAT_HEIGHT;
     return frameVisible && rootLarge;
   }
+
+  function onDetectedCloseOrMinimize() {
+    if (!state.chatCurrentlyOpen) return;
+
+    state.chatCurrentlyOpen = false;
+    document.body.classList.remove('esw-open');
+    stopScrollGuard();
+    unlockPageScrollPersistent();
+    setTimeout(applyStylesWithRetry, 50);
+
+    if (state.chatEverOpened) {
+      clearTimer('followup');
+      const messages = getLocalizedMessages();
+      state.timers.followup = setTimeout(() => {
+        if (!isOpenState()) showNudge(messages.followup);
+      }, CONFIG.NUDGE_DELAY_MS);
+    }
+  }
+
+  function onDetectedOpen() {
+    state.chatCurrentlyOpen = true;
+    state.chatEverOpened = true;
+    document.body.classList.add('esw-open');
+    lockPageScrollPersistent();
+    startScrollGuard(1600);
+    removeNudge();
+    clearAllTimers();
+    setTimeout(applyStylesWithRetry, 50);
+    setTimeout(updateVisualViewportVars, 50);
+    setTimeout(updateVisualViewportVars, 250);
+  }
+
   function evaluateAndApplyOpenState() {
     const nowOpen = isOpenState();
     const wasOpen = state.chatCurrentlyOpen;
-    // No state change
+
     if (nowOpen === wasOpen) return;
-    // Transition: open → minimized
+
     if (wasOpen && !nowOpen) {
-      console.log('[STATE] Chat minimized');
-      state.chatCurrentlyOpen = false;
-      document.body.classList.remove('esw-open');
-      // Only show follow-up nudge if chat was previously opened
-      if (state.chatEverOpened) {
-        clearTimer('followup');
-        const messages = getLocalizedMessages();
-        console.log('[FOLLOWUP] Scheduling follow-up nudge');
-        state.timers.followup = setTimeout(() => {
-          console.log('[FOLLOWUP] Showing follow-up nudge');
-          if (!isOpenState()) {
-            showNudge(messages.followup);
-          }
-        }, CONFIG.NUDGE_DELAY_MS);
-      }
+      onDetectedCloseOrMinimize();
     }
-    // Transition: minimized → open
+
     if (!wasOpen && nowOpen) {
-      console.log('[STATE] Chat opened');
-      state.chatCurrentlyOpen = true;
-      state.chatEverOpened = true;
-      document.body.classList.add('esw-open');
-      removeNudge();
-      clearAllTimers();
+      onDetectedOpen();
     }
   }
+
   function startStatePolling() {
-    if (state.observers.statePoller) {
-      clearInterval(state.observers.statePoller);
-    }
+    if (state.observers.statePoller) clearInterval(state.observers.statePoller);
     state.chatCurrentlyOpen = isOpenState();
     state.observers.statePoller = setInterval(
       evaluateAndApplyOpenState,
       CONFIG.STATE_POLL_INTERVAL_MS
     );
   }
-  /* ====== Event Handlers ====== */
+
   function handleResize() {
     updateHeaderHeightVar();
     updateNudgePosition();
-    if (isMobile() && isOpenState()) {
-      // NON ricalcolare layout durante tastiera
-      return;
-    }
+
+    if (isMobile() && isOpenState()) return;
+
     setTimeout(() => {
       lockLauncherStyle();
       lockFixedRootStyle();
     }, 50);
   }
-  /* ====== Salesforce Events ====== */
+
+  /* ====== Salesforce Events (documented + safe fallbacks) ====== */
   window.addEventListener('onEmbeddedMessagingReady', function () {
-    console.log('[ESW] Embedded Messaging Ready');
     document.body.classList.add('chat-launcher-fixed');
     updateHeaderHeightVar();
     applyStylesWithRetry();
     observeDynamicElements();
     startStatePolling();
+    initMobileViewportTracking();
     window.addEventListener('resize', handleResize);
-    // Schedule first nudge only if chat never opened
+
     clearTimer('first');
     const messages = getLocalizedMessages();
     state.timers.first = setTimeout(() => {
-      console.log('[NUDGE] First timer expired');
       if (!state.chatEverOpened && !isOpenState()) {
         showNudge(messages.first);
       }
     }, CONFIG.NUDGE_DELAY_MS);
-    forceMobileFullscreen();
-    forceConversationFullWidth();
   });
-  window.addEventListener('resize', function () {
-  // resize = tastiera → NON toccare layout
-});
+
+  window.addEventListener('onEmbeddedMessagingButtonCreated', function () {
+    document.body.classList.add('chat-launcher-fixed');
+    applyStylesWithRetry();
+    observeDynamicElements();
+    startStatePolling();
+  });
+
   window.addEventListener('onEmbeddedMessagingButtonClicked', function () {
-    console.log('[ESW] Button clicked');
+    lockPageScrollPersistent();
+    startScrollGuard(1600);
     setTimeout(evaluateAndApplyOpenState, 250);
   });
-  window.addEventListener('onEmbeddedMessagingWindowOpened', function () {
-    console.log('[ESW] Window opened event');
-    state.chatCurrentlyOpen = true;
-    state.chatEverOpened = true;
-    document.body.classList.add('esw-open');
-    removeNudge();
-    clearAllTimers();
-    setTimeout(applyStylesWithRetry, 50);
-    forceMobileFullscreen();
-    forceConversationFullWidth();
-    setTimeout(forceMobileFullscreen, 100);
-    setTimeout(forceConversationFullWidth, 150);
-    setTimeout(forceConversationFullWidth, 300);
+
+  window.addEventListener('onEmbeddedMessagingConversationOpened', function () {
+    onDetectedOpen();
   });
-  window.addEventListener('onEmbeddedMessagingWindowMinimized', function () {
-    console.log('[ESW] Window minimized event');
-    state.chatCurrentlyOpen = false;
-    document.body.classList.remove('esw-open');
-    setTimeout(applyStylesWithRetry, 50);
-    if (state.chatEverOpened) {
-      clearTimer('followup');
-      const messages = getLocalizedMessages();
-      console.log('[FOLLOWUP] Scheduling follow-up nudge (event)');
-      state.timers.followup = setTimeout(() => {
-        console.log('[FOLLOWUP] Showing follow-up nudge (event)');
-        if (!isOpenState()) {
-          showNudge(messages.followup);
-        }
-      }, CONFIG.NUDGE_DELAY_MS);
-    }
-  });
-  window.addEventListener('onEmbeddedMessagingWindowClosed', function () {
-    console.log('[ESW] Window closed event');
-    state.chatCurrentlyOpen = false;
-    document.body.classList.remove('esw-open');
-    setTimeout(applyStylesWithRetry, 50);
+
+  window.addEventListener('onEmbeddedMessagingConversationClosed', function () {
+    onDetectedCloseOrMinimize();
   });
 })();
 </script>
+
 <!-- ======================== CUSTOM STYLES ======================== -->
 <style>
 :root {
-  /* Launcher (button) */
   --chat-launcher-bottom: 60px;
   --chat-launcher-right: 30px;
-  /* Nudge */
   --chat-nudge-offset: 70px;
-  /* Header mobile */
   --chat-header-height: 60px;
   --site-header-height: 60px;
-  /* Desktop: lift chat box from bottom */
+  --vvh: 100dvh;
+  --vv-offset-top: 0px;
   --chat-frame-bottom-gap: 40px;
   --chat-frame-right-gap: 30px;
 }
-/* ======= DESKTOP ======= */
+
+/* ======= DESKTOP (UNCHANGED) ======= */
 @media (min-width: 1025px) {
   .embeddedMessagingFrame {
     border-radius: 16px !important;
     overflow: hidden !important;
     z-index: 2147483645 !important;
   }
+
   .embeddedMessagingHeader {
     border-top-left-radius: 16px !important;
     border-top-right-radius: 16px !important;
   }
+
   .embeddedMessagingConversation {
     border-bottom-left-radius: 16px !important;
     border-bottom-right-radius: 16px !important;
   }
 }
+
 /* ======= LAUNCHER FIXED ======= */
 .chat-launcher-fixed .embeddedServiceLauncher,
 .chat-launcher-fixed .embeddedServiceSidebarButton,
@@ -801,6 +1138,7 @@ function initEmbeddedMessaging() {
   transform: none !important;
   z-index: 2147483647 !important;
 }
+
 /* ======= NUDGE ======= */
 .chat-nudge {
   position: fixed;
@@ -808,7 +1146,7 @@ function initEmbeddedMessaging() {
   right: var(--chat-launcher-right);
   background: #ffffff;
   color: #000;
-  padding: 10px 32px 10px 12px;
+  padding: 10px 20px 10px 12px;
   border-radius: 12px;
   box-shadow: 0 6px 20px rgba(0, 0, 0, 0.15);
   font-size: 14px;
@@ -817,6 +1155,7 @@ function initEmbeddedMessaging() {
   cursor: pointer;
   animation: bounce 5s ease-out;
 }
+
 @keyframes bounce {
   0% { transform: translateY(0); }
   20% { transform: translateY(-6px); }
@@ -825,6 +1164,7 @@ function initEmbeddedMessaging() {
   80% { transform: translateY(0); }
   100% { transform: translateY(0); }
 }
+
 .chat-nudge .close-btn {
   position: absolute;
   top: 4px;
@@ -835,134 +1175,102 @@ function initEmbeddedMessaging() {
   cursor: pointer;
   margin-left: 8px;
 }
+
 .chat-nudge .close-btn:hover {
   color: #000;
 }
-/* ======= MOBILE FULLSCREEN ======= */
+
+/* ======= MOBILE (FIX) — iPhone Safari keyboard-safe under fixed header ======= */
 @media (max-width: 1024px) {
   body.esw-open {
-    overflow: hidden;
+    position: relative !important;
+    overflow: hidden !important;
+    width: 100% !important;
+    overscroll-behavior: none;
   }
-  /* Salesforce root */
+
+  body.page-scroll-locked {
+    position: fixed !important;
+    left: 0 !important;
+    right: 0 !important;
+    width: 100% !important;
+    overflow: hidden !important;
+    overscroll-behavior: none !important;
+    touch-action: none !important;
+  }
+
   .esw-open #embedded-messaging {
     position: fixed !important;
-    top: var(--site-header-height, 60px) !important;
     left: 0 !important;
     right: 0 !important;
-    bottom: 0 !important;
-    width: auto !important;
+    top: calc(var(--site-header-height, 60px) + var(--vv-offset-top, 0px)) !important;
+    height: calc(var(--vvh, 100dvh) - var(--site-header-height, 60px) - var(--vv-offset-top, 0px)) !important;
+    max-height: calc(var(--vvh, 100dvh) - var(--site-header-height, 60px) - var(--vv-offset-top, 0px)) !important;
+    width: 100vw !important;
     max-width: none !important;
-    height: calc(100dvh - var(--site-header-height, 60px)) !important;
     margin: 0 !important;
-    inset: auto 0 0 0 !important;
     z-index: 2147483646 !important;
   }
-  /* Any fixed wrapper Salesforce adds */
-  .esw-open #embedded-messaging > div,
-  .esw-open #embedded-messaging [style*="fixed"] {
-    position: fixed !important;
-    left: 0 !important;
-    right: 0 !important;
-    width: auto !important;
-    max-width: none !important;
-  }
-  /* Iframe */
+
   .esw-open iframe[data-embedded-messaging-iframe],
   .esw-open .embeddedMessagingFrame {
     position: fixed !important;
-    top: var(--site-header-height, 60px) !important;
     left: 0 !important;
     right: 0 !important;
-    bottom: 0 !important;
-    width: auto !important;
+    top: calc(var(--site-header-height, 60px) + var(--vv-offset-top, 0px)) !important;
+    height: calc(var(--vvh, 100dvh) - var(--site-header-height, 60px) - var(--vv-offset-top, 0px)) !important;
+    max-height: calc(var(--vvh, 100dvh) - var(--site-header-height, 60px) - var(--vv-offset-top, 0px)) !important;
+    width: 100vw !important;
     max-width: none !important;
-    height: calc(100dvh - var(--site-header-height, 60px)) !important;
-    border-radius: 16px 16px 0 0 !important;
+    margin: 0 !important;
+    border-radius: 0 !important;
+    z-index: 2147483646 !important;
   }
-}
-@media (max-width: 1024px) {
-  /* Container interno della conversazione */
-  .esw-open .embeddedMessagingConversation,
+
   .esw-open .embeddedMessagingWindow,
-  .esw-open .embeddedMessagingFrameContainer {
-    width: auto !important;
+  .esw-open .embeddedMessagingFrameContainer,
+  .esw-open .embeddedMessagingConversation,
+  .esw-open .embeddedMessagingConversationContainer,
+  .esw-open .embeddedMessagingConversationBody {
+    width: 100% !important;
     max-width: none !important;
-    margin: 0 !important;
     left: 0 !important;
     right: 0 !important;
-  }
-  /* Header verde */
-  .esw-open .embeddedMessagingHeader {
-    width: auto !important;
-    max-width: none !important;
     margin: 0 !important;
+    transform: none !important;
   }
-  /* Area messaggi */
-  .esw-open .embeddedMessagingConversationBody,
-  .esw-open .embeddedMessagingConversationContainer {
-    width: auto !important;
-    max-width: none !important;
+
+  .esw-open .embeddedMessagingHeader {
+    position: sticky !important;
+    top: 0 !important;
+    z-index: 10 !important;
   }
-}
-  @media (max-width: 1024px) {
+
   .esw-open .embeddedMessagingConversation {
-    position: relative !important;
     display: flex !important;
     flex-direction: column !important;
     height: 100% !important;
   }
-  /* Header chat BLOCCATO */
-  .esw-open .embeddedMessagingHeader {
-    position: absolute !important;
-    top: 0 !important;
-    left: 0 !important;
-    right: 0 !important;
-    z-index: 5 !important;
-  }
-  /* Corpo messaggi scorre sotto l'header */
+
   .esw-open .embeddedMessagingConversationBody {
-    margin-top: var(--chat-header-height, 60px) !important;
     flex: 1 1 auto !important;
     overflow-y: auto !important;
     -webkit-overflow-scrolling: touch;
+    overflow-anchor: none !important;
   }
-  /* Input resta in basso */
+
   .esw-open .embeddedMessagingInputContainer {
     flex-shrink: 0 !important;
   }
-}
-  @media (max-width: 1024px) {
-  .esw-open .embeddedMessagingWindow,
-  .esw-open .embeddedMessagingFrameContainer {
-    transform: none !important;
-    top: 0 !important;
-  }
-}
-@media (max-width: 1024px) {
-  .esw-open * {
-    max-width: none !important;
-  }
-}
-@media (max-width: 1024px) {
-  body.esw-open {
-    position: fixed;
-    width: 100%;
-    overscroll-behavior: none;
-  }
-}
-/* 🔒 KILL overflow orizzontale mobile (Safari fix) */
-@media (max-width: 1024px) {
+
   html, body {
     width: 100% !important;
     max-width: 100% !important;
     overflow-x: hidden !important;
   }
+
   body.esw-open {
     overflow-x: hidden !important;
   }
 }
 </style>
-<!-- ======================== LOAD SCRIPT ======================== -->
-<script type='text/javascript' src='https://leapmotor--dev01.sandbox.my.site.com/ESWLPMLeapmotor1760706603231/assets/js/bootstrap.min.js' onload='initEmbeddedMessaging()'></script>
-  </body>
-</html>
