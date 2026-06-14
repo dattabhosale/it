@@ -47,6 +47,53 @@
           <span class="button-arrow">→</span>
         </button>
       </div>
+      <button id="customChatButton" class="chat-fab">
+  <span>💬</span>
+  <span class="chat-label">Chat with us</span>
+</button>
+<style>
+.chat-fab {
+  position: fixed;
+  bottom: 100px;
+  right: 30px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 12px 18px;
+  background: linear-gradient(135deg, #0070d2, #005bb5);
+  color: #fff;
+  font-size: 14px;
+  font-weight: 600;
+  border-radius: 40px;
+  border: none;
+  cursor: pointer;
+  box-shadow: 0 8px 25px rgba(0,0,0,0.25);
+  z-index: 2147483647;
+  transition: all 0.3s ease;
+}
+
+.chat-fab:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 12px 35px rgba(0,0,0,0.3);
+}
+
+.chat-fab span:first-child {
+  background: rgba(255,255,255,0.2);
+  padding: 6px;
+  border-radius: 50%;
+}
+
+@media (max-width: 768px) {
+  .chat-label {
+    display: none;
+  }
+
+  .chat-fab {
+    padding: 14px;
+    border-radius: 50%;
+  }
+}
+</style>
       <div class="hero-stats">
         <div class="stat-item">
           <div class="stat-number">600+</div>
@@ -235,7 +282,6 @@
       </div>
     </footer>
     <script src="script.js"></script>
-    <script type='text/javascript'>
 <!-- ======================== SALESFORCE EMBEDDED MESSAGING (FULL CORRECTED) ======================== -->
 
 <script type="text/javascript">
